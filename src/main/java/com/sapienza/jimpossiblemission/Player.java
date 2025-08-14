@@ -2,6 +2,8 @@ package com.sapienza.jimpossiblemission;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
@@ -9,10 +11,8 @@ import java.util.Objects;
 public class Player {
     PlayerKeyHandler playerKeyHandler;
     GamePanel gamePanel;
-    BufferedImage sprite_idle_rx;
-    BufferedImage sprite_idle_lx;
-    BufferedImage[] spritesRunRight = new BufferedImage[15];
-    BufferedImage[] spritesRunLeft = new BufferedImage[15];
+    BufferedImage[] spritesRunRight = new BufferedImage[16];
+    BufferedImage[] spritesRunLeft = new BufferedImage[16];
     int x;
     int y;
     int speed;
@@ -20,27 +20,24 @@ public class Player {
 
     int frameIndex = 0;        // quale frame stiamo disegnando
     int frameCounter = 0;      // per il tempo dell'animazione
-    int frameDelay = 3;        // numero di cicli di game loop prima di passare al prossimo frame
+    int frameDelay = 4;        // numero di cicli di game loop prima di passare al prossimo frame
 
     public Player(GamePanel gamePanel, PlayerKeyHandler playerKeyHandler) {
         this.gamePanel = gamePanel;
         this.playerKeyHandler = playerKeyHandler;
         this.x = 618;
-        this.y = 217-(96*2);
-        this.speed = 6;
+        this.y = 217;
+        this.speed = 5;
         this.direction = "left";
         loadSprite();
     }
 
     public void loadSprite() {
         try {
-            sprite_idle_rx = ImageIO.read(Objects.requireNonNull(getClass().getResource("/player/idle/player_idle_rx.png")));
-            sprite_idle_lx = ImageIO.read(Objects.requireNonNull(getClass().getResource("/player/idle/player_idle_lx.png")));
-            for (int i = 0; i < 15; i++) {
-                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/player/run/player_run_" + i + "_rx.png")));
-                spritesRunRight[i] = scaleSprite(normalizeSprite(raw, 48, 96), 3);
-                raw  = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/player/run/player_run_" + i + "_lx.png")));
-                spritesRunLeft[i] = scaleSprite(normalizeSprite(raw, 48, 96), 3);
+            for (int i = 0; i <= 15; i++) {
+                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/player/run/" + i + ".png")));
+                spritesRunRight[i] = raw;
+                spritesRunLeft[i] = flipHorizontal(raw);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -55,7 +52,7 @@ public class Player {
         }
         g.drawImage(image, x, y, image.getWidth(), image.getHeight(), null);
         g.setColor(Color.RED);
-       // g.drawRect(x, y, image.getWidth(), image.getHeight());
+        // g.drawRect(x, y, image.getWidth(), image.getHeight());
     }
 
     public void update(boolean movementEnabled) {
@@ -87,29 +84,17 @@ public class Player {
         }
     }
 
-    private BufferedImage normalizeSprite(BufferedImage original, int targetWidth, int targetHeight) {
-        // Crea un'immagine vuota con sfondo trasparente
-        BufferedImage normalized = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = normalized.createGraphics();
 
-        // Coordinate di partenza per allineare in basso
-        int x = (targetWidth - original.getWidth()) / 2; // centro orizzontalmente
-        int y = targetHeight - original.getHeight();     // piedi in basso
+    public static BufferedImage flipHorizontal(BufferedImage img) {
+        int w = img.getWidth();
+        int h = img.getHeight();
 
-        g2.drawImage(original, x, y, null);
-        g2.dispose();
+        // Trasformazione: scala a -1 sull’asse X, poi trasla di w pixel
+        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+        tx.translate(-w, 0);
 
-        return normalized;
-    }
-
-    private BufferedImage scaleSprite(BufferedImage original, int scaleFactor) {
-        int newW = original.getWidth() * scaleFactor;
-        int newH = original.getHeight() * scaleFactor;
-
-        BufferedImage scaled = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = scaled.createGraphics();
-        g2.drawImage(original, 0, 0, newW, newH, null);
-        g2.dispose();
-        return scaled;
+        // Applica la trasformazione
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(img, null);
     }
 }
