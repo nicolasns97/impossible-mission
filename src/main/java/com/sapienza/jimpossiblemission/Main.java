@@ -1,35 +1,41 @@
 package com.sapienza.jimpossiblemission;
 
-import org.mapeditor.core.Map;
-import org.mapeditor.io.TMXMapReader;
+import com.sapienza.jimpossiblemission.controller.GameController;
+import com.sapienza.jimpossiblemission.view.GameView;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.xml.bind.JAXBException;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Main {
-    public static void main(String[] args) throws IOException, JAXBException {
+    private static final boolean DEBUG = true;
+
+    public static void main(String[] args) {
+        Debug.getInstance().setDebug(DEBUG);
+        GameController gameController = GameFactory.createGame();
+
+        JFrame window = loadWindow(gameController.getGameView());
+        window.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                gameController.stop();
+                System.exit(0);
+            }
+        });
+
+        gameController.start();
+
+    }
+
+    private static JFrame loadWindow(GameView gameView) {
         JFrame window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
         window.setTitle("JImpossibleMission");
-
-        GamePanel gamePanel = new GamePanel();
-        window.add(gamePanel);
+        window.add(gameView);
         window.pack();
-
         window.setLocationRelativeTo(null);
         window.setVisible(true);
-
-        gamePanel.startGameThread();
-
-
-
-
+        return window;
     }
 }
