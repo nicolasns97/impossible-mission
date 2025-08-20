@@ -27,14 +27,14 @@ public class GameController extends AbstractGameController {
                 super.keyPressed(e);
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_LEFT -> {
-                        if (!agent.isEnabled()) break;
+                        if (!agent.isEnabled() || agent.isJumping()) break;
 
                         leftPressed = true;
                         agent.setMoving(true);
                         agent.setDirection(Direction.LEFT);
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        if (!agent.isEnabled()) break;
+                        if (!agent.isEnabled() || agent.isJumping()) break;
 
                         rightPressed = true;
                         agent.setMoving(true);
@@ -42,6 +42,10 @@ public class GameController extends AbstractGameController {
                     }
                     case KeyEvent.VK_UP -> gameModel.getElevator().startMoving(Direction.UP);
                     case KeyEvent.VK_DOWN -> gameModel.getElevator().startMoving(Direction.DOWN);
+                    case KeyEvent.VK_SPACE -> {
+                        if (!agent.isEnabled()) break;
+                        agent.pressJump();
+                    }
                 }
             }
 

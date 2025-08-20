@@ -24,6 +24,7 @@ public class GameView extends JPanel implements Observer {
     private int agentY;
     private boolean moving;
     private Direction agentDirection;
+    private boolean agentJumping;
     private List<Rectangle> collisionObjects;
 
     public GameView(TileMapView tileMapView, ElevatorView elevatorView, AgentView agentView) {
@@ -43,7 +44,7 @@ public class GameView extends JPanel implements Observer {
 
         tileMapView.draw(g2d, cameraX, cameraY, screenWidth, screenHeight);
         elevatorView.drawLift(g2d, elevatorX, elevatorY);
-        agentView.draw(g2d, agentDirection, moving, agentX, agentY);
+        agentView.draw(g2d, agentDirection, moving, agentX, agentY, agentJumping);
         elevatorView.drawDoors(g2d, elevatorX, elevatorY);
         elevatorView.drawRoof(g2d, cameraY);
 
@@ -68,6 +69,7 @@ public class GameView extends JPanel implements Observer {
 
             agentX = ((GameModel) o).getAgent().getX();
             agentY = ((GameModel) o).getAgent().getY();
+            agentJumping = ((GameModel) o).getAgent().isJumping();
 
             collisionObjects = ((GameModel) o).getTileMap().getCollisionObjects(cameraX, cameraY);
         }

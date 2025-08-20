@@ -13,11 +13,16 @@ public class AgentModel {
     private Direction direction;
     private boolean moving;
     private boolean enabled;
+    private boolean jumping;
 
     private float velocityY = 0;
-    private final float gravity = 1.2f; // forza gravità
-    private final float jumpStrength = -18f; // impulso salto
-    private boolean onGround = false;
+    private float velocityX = 0;
+    private final float gravity = 0.5f; // forza gravità
+    private final float jumpStrength = -11f; // impulso salto
+    private boolean onGround = true;
+
+    private int jumpBufferFrames = 8;
+    private int jumpBufferCounter = 0;
 
     public AgentModel(int x, int y, int width, int height, int speed, Direction direction) {
         this.x = x;
@@ -26,6 +31,7 @@ public class AgentModel {
         this.height = height;
         this.speed = speed;
         this.direction = direction;
+        this.jumping = false;
     }
 
     public void applyGravity() {
@@ -36,19 +42,31 @@ public class AgentModel {
         if (onGround) {
             velocityY = jumpStrength;
             onGround = false;
+            jumping = true;
+
+            int i = 3;
+            if (direction == Direction.RIGHT) {
+                velocityX = speed+ i;
+            } else {
+                velocityX = -(speed+ i);
+            }
         }
     }
 
     public void land() {
         velocityY = 0;
         onGround = true;
+        jumping = false;
     }
-
 
     public Rectangle getBoundingBox() {
         int marginX = 20; // margine laterale
         int marginY = 0;  // margine superiore e inferiore
-        return new Rectangle(x + marginX, y + marginY, width - 2 * marginX, height - 2 * marginY);
+        int roofOffset = 0;
+        if (jumping) {
+            roofOffset = 50;
+        }
+        return new Rectangle(x + marginX, y + marginY + roofOffset, width - 2 * marginX, height - roofOffset);
     }
 
     public boolean isMoving() {
@@ -95,10 +113,6 @@ public class AgentModel {
         return speed;
     }
 
-    public void setSpeed(int speed) {
-        this.speed = speed;
-    }
-
     public void setX(int x) {
         this.x = x;
     }
@@ -121,5 +135,33 @@ public class AgentModel {
 
     public void setOnGround(boolean onGround) {
         this.onGround = onGround;
+    }
+
+    public boolean isJumping() {
+        return jumping;
+    }
+
+    public float getVelocityX() {
+        return velocityX;
+    }
+
+    public void setVelocityX(float velocityX) {
+        this.velocityX = velocityX;
+    }
+
+
+    public void updateJump() {
+        if (jumpBufferCounter > 0) {
+            if (onGround) {
+                jump(); // parte il salto
+                jumpBufferCounter = 0;
+            } else {
+                jumpBufferCounter--; // attendo che tocchi terra
+            }
+        }
+    }
+
+    public void pressJump() {
+        jumpBufferCounter = jumpBufferFrames;
     }
 }

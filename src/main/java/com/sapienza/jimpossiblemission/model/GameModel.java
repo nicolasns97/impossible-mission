@@ -41,21 +41,29 @@ public class GameModel extends Observable {
         List<Rectangle> collisionObjects = tileMap.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
         collisionObjects.add(elevator.getBoundingBox());
 
-        // 1. Gravità solo se non è a terra
+        // 1. Aggiorna salto/gravitá
+        agent.updateJump(); // buffer salto
         if (!agent.isOnGround()) {
             agent.applyGravity();
         }
 
-        // 2. Movimento orizzontale
-        int dx = 0;
+        // 2. Movimento orizzontale: input del giocatore + impulso del salto
+        int inputDx = 0;
         if (agent.isMoving()) {
-            dx = agent.getDirection() == Direction.RIGHT ? agent.getSpeed() : -agent.getSpeed();
+            inputDx = agent.getDirection() == Direction.RIGHT ? agent.getSpeed() : -agent.getSpeed();
         }
+        if (agent.isJumping()) {
+            inputDx = (int) agent.getVelocityX();
+        }
+
+        int dx = inputDx;
         CollisionManager.CollisionResult colX = collisionManager.checkCollision(collisionObjects, agent.getBoundingBox(), dx, 0);
+
         if (!colX.collided) {
             agent.setX(agent.getX() + dx);
         } else {
-            // ferma il movimento o eventualmente gestisci rimbalzo
+            // Se collide, azzera solo la componente del salto, input rimane
+            agent.setVelocityX(0);
         }
 
         // 3. Movimento verticale
@@ -69,10 +77,10 @@ public class GameModel extends Observable {
             agent.setOnGround(false);
         } else {
             if (dy > 0) { // caduta
-                // Snap preciso sopra al blocco su cui atterra
                 agent.setY(colY.collider.y - agent.getHeight());
-                agent.land(); // azzera velocità e imposta onGround = true
-            } else if (dy < 0) { // salto che sbatte al soffitto
+                agent.land();
+                agent.setVelocityX(0); // reset impulso salto quando atterra
+            } else if (dy < 0) { // salto contro il soffitto
                 agent.setY(agent.getY() + colY.intersection.height);
                 agent.setVelocityY(0);
             }
@@ -83,9 +91,10 @@ public class GameModel extends Observable {
     }
 
 
+
     private void handleInteractions() {
         agent.setEnabled(!elevator.isMoving());
-        elevator.setEnabled(elevator.isAgentOnElevator(agent));
+        elevator.setEnabled(!agent.isJumping() && elevator.isAgentOnElevator(agent));
     }
 
     private void updateGameLogic() {

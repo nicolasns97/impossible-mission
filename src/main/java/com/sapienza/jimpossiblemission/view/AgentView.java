@@ -13,15 +13,27 @@ import java.util.Objects;
 
 public class AgentView {
     private final String RUN_DIR = "/run";
+    private final String JUMP_DIR = "/jump";
+
     BufferedImage[] spritesRunRight = new BufferedImage[16];
     BufferedImage[] spritesRunLeft = new BufferedImage[16];
+    BufferedImage[] spritesJumpRight = new BufferedImage[12];
+    BufferedImage[] spritesJumpLeft = new BufferedImage[12];
 
-    int frameIndex = 0;
-    int frameCounter = 0;
-    int frameDelay = 4;        // numero di cicli di game loop prima di passare al prossimo frame
+    int runFrameIndex = 0;
+    int runFrameCounter = 0;
+    int jumpFrameIndex = 0;
+    int jumpFrameCounter = 0;
+    int runFrameDelay = 4;
+    int jumpFrameDelay = 4;
 
     public AgentView(String agentDirectory) {
         try {
+            for (int i = 0; i < 12; i++) {
+                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + JUMP_DIR + "/" + (i+1) + ".png")));
+                spritesJumpRight[i] = raw;
+                spritesJumpLeft[i] = flipHorizontal(raw);
+            }
             for (int i = 0; i <= 15; i++) {
                 BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + RUN_DIR + "/" + i + ".png")));
                 spritesRunRight[i] = raw;
@@ -32,28 +44,55 @@ public class AgentView {
         }
     }
 
-    public void draw(Graphics2D g, Direction direction, boolean moving, int x, int y) {
-        if (moving) {
-            frameCounter++;
-            if (frameCounter >= frameDelay) {
-                frameIndex = (frameIndex + 1) % 16; // vai al frame successivo
-                frameCounter = 0;
-            }
-        } else {
-            frameIndex = 0; // fermo → primo frame (idle)
-        }
+    public void draw(Graphics2D g, Direction direction, boolean moving, int x, int y, boolean jumping) {
         BufferedImage image = null;
-        switch (direction) {
-            case LEFT -> image = spritesRunLeft[frameIndex];
-            case RIGHT -> image = spritesRunRight[frameIndex];
+
+        if (jumping) {
+            // logica salto
+            jumpFrameCounter++;
+            if (jumpFrameCounter >= jumpFrameDelay) {
+                jumpFrameIndex = (jumpFrameIndex + 1) % 12;
+                jumpFrameCounter = 0;
+            }
+            image = (direction == Direction.LEFT) ? spritesJumpLeft[jumpFrameIndex] : spritesJumpRight[jumpFrameIndex];
+
+            // opzionale: reset frame corsa per evitare salto subito dopo frame sbagliato
+            runFrameIndex = 0;
+            runFrameCounter = 0;
+
+        } else if (moving) {
+            // logica corsa
+            runFrameCounter++;
+            if (runFrameCounter >= runFrameDelay) {
+                runFrameIndex = (runFrameIndex + 1) % 16;
+                runFrameCounter = 0;
+            }
+            image = (direction == Direction.LEFT) ? spritesRunLeft[runFrameIndex] : spritesRunRight[runFrameIndex];
+
+            // opzionale: reset frame salto per evitare glitch se subito dopo si salta
+            jumpFrameIndex = 0;
+            jumpFrameCounter = 0;
+
+        } else {
+            // fermo (idle)
+            runFrameIndex = 0;
+            runFrameCounter = 0;
+            jumpFrameIndex = 0;
+            jumpFrameCounter = 0;
+            image = (direction == Direction.LEFT) ? spritesRunLeft[runFrameIndex] : spritesRunRight[runFrameIndex];
         }
+
         g.drawImage(image, x, y, image.getWidth(), image.getHeight(), null);
+
         if (Debug.getInstance().isDebug()) {
             g.setColor(Color.RED);
-            g.drawRect(x, y, image.getWidth(), image.getHeight());
             int marginX = 20; // margine laterale
             int marginY = 0;  // margine superiore e inferiore
-            g.drawRect(x + marginX, y + marginY, image.getWidth() - 2 * marginX, image.getHeight()- 2 * marginY);
+            if (jumping) {
+                g.drawRect(x + marginX, y + marginY + 50, image.getWidth() - 2 * marginX, image.getHeight() - 50);
+            } else {
+                g.drawRect(x + marginX, y + marginY, image.getWidth() - 2 * marginX, image.getHeight());
+            }
         }
     }
 
