@@ -49,6 +49,7 @@ public class AgentView {
         BufferedImage image = null;
 
         if (jumping) {
+            // logica salto
             if (jumpFrameIndex == 0) {
                 jumpDirection = direction;
             }
@@ -59,7 +60,6 @@ public class AgentView {
             }
             image = (jumpDirection == Direction.LEFT) ? spritesJumpLeft[jumpFrameIndex] : spritesJumpRight[jumpFrameIndex];
 
-            // opzionale: reset frame corsa per evitare salto subito dopo frame sbagliato
             runFrameIndex = 0;
             runFrameCounter = 0;
 
@@ -72,7 +72,6 @@ public class AgentView {
             }
             image = (direction == Direction.LEFT) ? spritesRunLeft[runFrameIndex] : spritesRunRight[runFrameIndex];
 
-            // opzionale: reset frame salto per evitare glitch se subito dopo si salta
             jumpFrameIndex = 0;
             jumpFrameCounter = 0;
 
