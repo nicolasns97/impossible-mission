@@ -26,6 +26,7 @@ public class AgentView {
     int jumpFrameCounter = 0;
     int runFrameDelay = 4;
     int jumpFrameDelay = 4;
+    Direction jumpDirection;
 
     public AgentView(String agentDirectory) {
         try {
@@ -48,13 +49,15 @@ public class AgentView {
         BufferedImage image = null;
 
         if (jumping) {
-            // logica salto
+            if (jumpFrameIndex == 0) {
+                jumpDirection = direction;
+            }
             jumpFrameCounter++;
             if (jumpFrameCounter >= jumpFrameDelay) {
                 jumpFrameIndex = (jumpFrameIndex + 1) % 12;
                 jumpFrameCounter = 0;
             }
-            image = (direction == Direction.LEFT) ? spritesJumpLeft[jumpFrameIndex] : spritesJumpRight[jumpFrameIndex];
+            image = (jumpDirection == Direction.LEFT) ? spritesJumpLeft[jumpFrameIndex] : spritesJumpRight[jumpFrameIndex];
 
             // opzionale: reset frame corsa per evitare salto subito dopo frame sbagliato
             runFrameIndex = 0;

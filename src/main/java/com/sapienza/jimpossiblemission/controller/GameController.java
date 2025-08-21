@@ -27,14 +27,14 @@ public class GameController extends AbstractGameController {
                 super.keyPressed(e);
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_LEFT -> {
-                        if (!agent.isEnabled() || agent.isJumping()) break;
+                        if (!agent.isEnabled()) break;
 
                         leftPressed = true;
                         agent.setMoving(true);
                         agent.setDirection(Direction.LEFT);
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        if (!agent.isEnabled() || agent.isJumping()) break;
+                        if (!agent.isEnabled()) break;
 
                         rightPressed = true;
                         agent.setMoving(true);
