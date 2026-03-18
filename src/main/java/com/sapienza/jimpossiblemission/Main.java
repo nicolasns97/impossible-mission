@@ -1,6 +1,7 @@
 package com.sapienza.jimpossiblemission;
 
 import com.sapienza.jimpossiblemission.controller.GameController;
+import com.sapienza.jimpossiblemission.factory.GameFactory;
 import com.sapienza.jimpossiblemission.view.GameView;
 
 import javax.swing.*;
@@ -8,7 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class Main {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static void main(String[] args) {
         Debug.getInstance().setDebug(DEBUG);

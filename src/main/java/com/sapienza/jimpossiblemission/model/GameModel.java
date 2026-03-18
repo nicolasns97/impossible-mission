@@ -1,6 +1,7 @@
 package com.sapienza.jimpossiblemission.model;
 
 import com.sapienza.jimpossiblemission.Direction;
+import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 
 import java.awt.*;
 import java.util.List;
@@ -8,17 +9,22 @@ import java.util.Observable;
 
 public class GameModel extends Observable {
     private final TileMapModel tileMap;
+    private final List<Room> rooms;
     private final GameWorld gameWorld;
     private final ElevatorModel elevator;
     private final AgentModel agent;
     private final CollisionManager collisionManager;
+    private Room currentRoom;
+    private int frameCounter = 0;
 
-    public GameModel(TileMapModel tileMap, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
+    public GameModel(TileMapModel tileMap, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
         this.tileMap = tileMap;
+        this.rooms = rooms;
         this.gameWorld = gameWorld;
         this.elevator = elevator;
         this.agent = agent;
         this.collisionManager = collisionManager;
+        currentRoom = rooms.get(0);
     }
 
     public void update() {
@@ -38,8 +44,10 @@ public class GameModel extends Observable {
 
     private void updateEntities() {
         // 0. Recupero le aree solide
-        List<Rectangle> collisionObjects = tileMap.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
-        collisionObjects.add(elevator.getBoundingBox());
+        // List<Rectangle> collisionObjects = tileMap.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
+        // collisionObjects.add(elevator.getBoundingBox());
+        List<Rectangle> collisionObjects = rooms.get(0).getCollisionObjects();
+        rooms.get(0).getPlatformGroups().forEach(PlatformGroup::update);
 
         // 1. Aggiorna salto/gravitá
         agent.updateJump(); // buffer salto
@@ -68,7 +76,7 @@ public class GameModel extends Observable {
 
         // 3. Movimento verticale
         int dy = (int) agent.getVelocityY();
-        if (Math.abs(dy) < 1) dy = 0; // epsilon: evita micro-oscillazioni
+        if (Math.abs(dy) < 1) dy = 0;
 
         CollisionManager.CollisionResult colY = collisionManager.checkCollision(collisionObjects, agent.getBoundingBox(), 0, dy);
 
@@ -86,23 +94,68 @@ public class GameModel extends Observable {
             }
         }
 
+        frameCounter ++;
+        if (frameCounter == 120) {
+            for (Enemy e : rooms.get(0).getEnemies()) {
+                PatrollingRobot p = (PatrollingRobot) e;
+                p.setDirection(p.getDirection() == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
+            }
+            frameCounter = 0;
+        }
+        rooms.get(0).getEnemies().forEach(Enemy::update);
         // 4. Aggiorna l’elevatore
         elevator.update();
     }
 
-
-
     private void handleInteractions() {
         agent.setEnabled(!elevator.isMoving());
         elevator.setEnabled(!agent.isJumping() && elevator.isAgentOnElevator(agent));
+        handleAgentOnPlatform();
     }
 
     private void updateGameLogic() {
 
     }
 
+    private void handleAgentOnPlatform() {
+        Rectangle agentBox = agent.getBoundingBox();
+        List<PlatformGroup> platformGroups = rooms.get(0).getPlatformGroups();
+
+        for (PlatformGroup platformGroup : platformGroups) {
+            for (Platform platform : platformGroup.getPlatforms()) {
+                Rectangle platformBox = platform.getBoundingBox();
+
+                boolean onTop = agentBox.y + agentBox.height <= platformBox.y + 5
+                        && agentBox.y + agentBox.height >= platformBox.y - 5
+                        && agentBox.x + agentBox.width > platformBox.x
+                        && agentBox.x < platformBox.x + platformBox.width;
+
+                platform.setEnabled(onTop);
+
+                if (onTop) {
+                    agent.setY(platformBox.y - agent.getHeight());
+                    agent.setOnGround(true);
+
+                    if (platform.isMoving()) {
+                        int dy = platform.getMovingDirection() == Direction.UP ? -platform.getSpeed() : platform.getSpeed();
+                        agent.setY(agent.getY() + dy);
+                        agent.setEnabled(false);
+                    }
+                }
+            }
+        }
+    }
+
+
     public GameWorld getGameWorld() {
         return gameWorld;
+    }
+
+    public void movePlatform(Direction direction) {
+        rooms.get(0).getPlatformGroups().stream()
+                .filter(group -> group.getPlatforms().stream().anyMatch(Platform::isEnabled))
+                .findFirst()
+                .ifPresent(group -> group.move(direction));
     }
 
     public ElevatorModel getElevator() {
@@ -119,5 +172,13 @@ public class GameModel extends Observable {
 
     public TileMapModel getTileMap() {
         return tileMap;
+    }
+
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    public Room getCurrentRoom() {
+        return currentRoom;
     }
 }

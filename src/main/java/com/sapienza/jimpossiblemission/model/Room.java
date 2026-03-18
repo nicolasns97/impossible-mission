@@ -1,0 +1,87 @@
+package com.sapienza.jimpossiblemission.model;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Room {
+    private final RoomCode code;
+    private final Position spawnPosition;
+    private final List<Rectangle> collisionObjects;
+    private final List<Enemy> enemies;
+    private final List<Container> containers;
+    private final List<Terminal> terminals;
+    private final List<PlatformGroup> platformGroups;
+
+    public Room(RoomCode code,
+                Position spawnPosition,
+                List<Rectangle> collisionObjects,
+                List<Enemy> enemies,
+                List<Container> containers,
+                List<Terminal> terminals,
+                List<PlatformGroup> platformGroups) {
+        this.code = code;
+        this.spawnPosition = spawnPosition;
+        this.collisionObjects = collisionObjects;
+        this.enemies = enemies;
+        this.containers = containers;
+        this.terminals = terminals;
+        this.platformGroups = platformGroups;
+    }
+
+    public RoomCode getCode() {
+        return code;
+    }
+
+    public Position getSpawnPosition() {
+        return spawnPosition;
+    }
+
+    public List<Rectangle> getCollisionObjects() {
+        List<Rectangle> collisionObjects = new ArrayList<>();
+        List<Rectangle> platforms = platformGroups.stream()
+                .flatMap(p -> p.getPlatforms().stream()).map(Platform::getBoundingBox)
+                .collect(Collectors.toList());
+        collisionObjects.addAll(platforms);
+        collisionObjects.addAll(this.collisionObjects);
+        return collisionObjects;
+    }
+
+    public List<Enemy> getEnemies() {
+        return enemies;
+    }
+
+    public List<Container> getContainers() {
+        return containers;
+    }
+
+    public List<Terminal> getTerminals() {
+        return terminals;
+    }
+
+    public List<PlatformGroup> getPlatformGroups() {
+        return platformGroups;
+    }
+
+    public enum RoomCode {
+        ECHO_CHAMBER("echo-chamber"),
+        SHADOW_VAULT("shadow-vault"),
+        SILICON_LAB("silicon-lab"),
+        SENTRY_HALL("sentry-hall"),
+        DATA_GRID_ROOM("data-grid-room"),
+        MECH_CORRIDOR("mech-corridor"),
+        CONTROL_NODE("control-node"),
+        CORE_TERMINAL("core-terminal");
+
+        private final String path;
+
+        RoomCode(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return path;
+        }
+    }
+}

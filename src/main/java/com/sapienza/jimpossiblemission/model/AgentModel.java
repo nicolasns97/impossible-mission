@@ -17,8 +17,8 @@ public class AgentModel {
 
     private float velocityY = 0;
     private float velocityX = 0;
-    private final float gravity = 0.5f; // forza gravità
-    private final float jumpStrength = -11f; // impulso salto
+    private final float gravity = 0.3f; // forza gravità
+    private final float jumpStrength = -7f; // impulso salto
     private boolean onGround = true;
 
     private int jumpBufferFrames = 8;
@@ -44,9 +44,9 @@ public class AgentModel {
             onGround = false;
             jumping = true;
 
-            int i = 3;
+            int i = 2;
             if (direction == Direction.RIGHT) {
-                velocityX = speed+ i;
+                velocityX = speed + i;
             } else {
                 velocityX = -(speed+ i);
             }
@@ -148,7 +148,6 @@ public class AgentModel {
     public void setVelocityX(float velocityX) {
         this.velocityX = velocityX;
     }
-
 
     public void updateJump() {
         if (jumpBufferCounter > 0) {

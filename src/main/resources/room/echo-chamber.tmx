@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="55">
+ <editorsettings>
+  <export format="tmx"/>
+ </editorsettings>
+ <imagelayer id="4" name="Livello immagine 1">
+  <image source="echo-chamber.png" width="1280" height="640"/>
+ </imagelayer>
+ <objectgroup id="3" name="collision-objects">
+  <object id="1" x="0" y="0" width="40" height="640"/>
+  <object id="3" x="40" y="156" width="535" height="24"/>
+  <object id="5" x="1236" y="156" width="44" height="484"/>
+  <object id="7" x="669" y="156" width="567" height="24"/>
+  <object id="8" x="1015" y="607" width="221" height="33"/>
+  <object id="9" x="386" y="457" width="535" height="24"/>
+  <object id="10" x="386" y="607" width="535" height="33"/>
+  <object id="11" x="1015" y="457" width="221" height="24"/>
+  <object id="12" x="1015" y="307" width="221" height="24"/>
+  <object id="13" x="40" y="607" width="252" height="33"/>
+  <object id="14" x="40" y="457" width="252" height="24"/>
+  <object id="15" x="40" y="307" width="252" height="24"/>
+  <object id="16" x="386" y="307" width="189" height="24"/>
+  <object id="17" x="669" y="307" width="252" height="24"/>
+ </objectgroup>
+ <objectgroup id="9" name="platforms-stops">
+  <object id="46" x="575" y="156">
+   <properties>
+    <property name="spawn" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="47" x="575" y="307">
+   <point/>
+  </object>
+  <object id="48" x="921" y="307">
+   <properties>
+    <property name="spawn" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="49" x="921" y="457">
+   <properties>
+    <property name="spawn" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="50" x="921" y="607">
+   <point/>
+  </object>
+  <object id="51" x="292" y="307">
+   <properties>
+    <property name="spawn" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="52" x="292" y="457">
+   <properties>
+    <property name="spawn" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="53" x="292" y="607">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="7" name="enemies">
+  <object id="33" x="1056" y="310">
+   <point/>
+  </object>
+  <object id="36" x="256" y="310">
+   <point/>
+  </object>
+  <object id="37" x="896" y="461">
+   <point/>
+  </object>
+  <object id="38" x="896" y="612">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="spawn">
+  <object id="31" x="1110" y="117">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="8" name="containers">
+  <object id="40" x="96" y="156">
+   <point/>
+  </object>
+  <object id="41" x="96" y="607">
+   <point/>
+  </object>
+  <object id="42" x="576" y="607">
+   <point/>
+  </object>
+  <object id="43" x="1184" y="607">
+   <point/>
+  </object>
+ </objectgroup>
+</map>

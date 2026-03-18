@@ -20,6 +20,7 @@ public class CollisionManager {
         return new CollisionResult(false, null, null);
     }
 
+
     public static class CollisionResult {
         public final boolean collided;
         public final Rectangle collider;

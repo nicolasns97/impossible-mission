@@ -40,8 +40,8 @@ public class GameController extends AbstractGameController {
                         agent.setMoving(true);
                         agent.setDirection(Direction.RIGHT);
                     }
-                    case KeyEvent.VK_UP -> gameModel.getElevator().startMoving(Direction.UP);
-                    case KeyEvent.VK_DOWN -> gameModel.getElevator().startMoving(Direction.DOWN);
+                    case KeyEvent.VK_UP -> gameModel.movePlatform(Direction.UP); //gameModel.getElevator().startMoving(Direction.UP);
+                    case KeyEvent.VK_DOWN -> gameModel.movePlatform(Direction.DOWN); //gameModel.getElevator().startMoving(Direction.DOWN);
                     case KeyEvent.VK_SPACE -> {
                         if (!agent.isEnabled()) break;
                         agent.pressJump();
