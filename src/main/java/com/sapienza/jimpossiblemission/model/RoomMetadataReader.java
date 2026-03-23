@@ -22,7 +22,8 @@ public class RoomMetadataReader extends TMXReader {
             List<Rectangle> containers = getRectanglesFromLayer(map, "containers");
             List<Position> enemySpawnPositions = getPositionsFromLayer(map, "enemies");
             Position spawn = getPositionsFromLayer(map, "spawn").get(0);
-            roomMetadata = new RoomMetadata(collisionObjects, platforms, platformsStops, containers, enemySpawnPositions, spawn);
+            Position exit = getPositionsFromLayer(map, "exit").get(0);
+            roomMetadata = new RoomMetadata(collisionObjects, platforms, platformsStops, containers, enemySpawnPositions, spawn, exit);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -38,14 +39,16 @@ public class RoomMetadataReader extends TMXReader {
         private final List<Rectangle> containers;
         private final List<Position> enemySpawnPositions;
         private final Position spawnPosition;
+        private final Position exit;
 
-        public RoomMetadata(List<Rectangle> collisionObjects, List<Position> platforms, List<Position> platformsStops, List<Rectangle> containers, List<Position> enemySpawnPositions, Position spawnPosition) {
+        public RoomMetadata(List<Rectangle> collisionObjects, List<Position> platforms, List<Position> platformsStops, List<Rectangle> containers, List<Position> enemySpawnPositions, Position spawnPosition, Position exit) {
             this.collisionObjects = collisionObjects;
             this.platforms = platforms;
             this.platformsStops = platformsStops;
             this.containers = containers;
             this.enemySpawnPositions = enemySpawnPositions;
             this.spawnPosition = spawnPosition;
+            this.exit = exit;
         }
 
         public List<Rectangle> getCollisionObjects() {
@@ -70,6 +73,10 @@ public class RoomMetadataReader extends TMXReader {
 
         public List<Position> getPlatformsStops() {
             return platformsStops;
+        }
+
+        public Position getExit() {
+            return exit;
         }
     }
 }

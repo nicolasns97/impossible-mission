@@ -3,7 +3,6 @@ package com.sapienza.jimpossiblemission.view;
 import com.sapienza.jimpossiblemission.Debug;
 import com.sapienza.jimpossiblemission.Direction;
 import com.sapienza.jimpossiblemission.model.*;
-import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,8 +10,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.stream.Collectors;
-
-import static java.awt.Color.*;
 
 public class GameView extends JPanel implements Observer {
     private final TileMapView tileMapView;
@@ -49,20 +46,24 @@ public class GameView extends JPanel implements Observer {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        /**
-        tileMapView.draw(g2d, cameraX, cameraY, screenWidth, screenHeight);
-        elevatorView.drawLift(g2d, elevatorX, elevatorY);
-        agentView.draw(g2d, agentDirection, moving, agentX, agentY, agentJumping);
-        elevatorView.drawDoors(g2d, elevatorX, elevatorY);
-        elevatorView.drawRoof(g2d, cameraY);
 
-        if (Debug.getInstance().isDebug()) {
-            g.setColor(Color.BLUE);
-            for (Rectangle solid : collisionObjects) {
-                g.drawRect(solid.x, solid.y, solid.width, solid.height);
+        if (currentRoom == null) {
+            tileMapView.draw(g2d, cameraX, cameraY, screenWidth, screenHeight);
+            elevatorView.drawLift(g2d, elevatorX, elevatorY);
+            elevatorView.drawDoors(g2d, elevatorX, elevatorY);
+            elevatorView.drawRoof(g2d, cameraY);
+
+            if (Debug.getInstance().isDebug()) {
+                g.setColor(Color.BLUE);
+                for (Rectangle solid : collisionObjects) {
+                    g.drawRect(solid.x, solid.y, solid.width, solid.height);
+                }
             }
-        } */
-        roomView.draw(g2d, platforms);
+        } else {
+            roomView.draw(g2d, platforms);
+        }
+
+
         agentView.draw(g2d, agentDirection, moving, agentX, agentY, agentJumping);
     }
 
@@ -82,7 +83,7 @@ public class GameView extends JPanel implements Observer {
             agentY = gameModel.getAgent().getY();
             agentJumping = gameModel.getAgent().isJumping();
 
-            collisionObjects = gameModel.getTileMap().getCollisionObjects(cameraX, cameraY);
+            collisionObjects = gameModel.getElevatorTileMapModel().getCollisionObjects(cameraX, cameraY);
 
             platforms = gameModel.getRooms().get(0).getPlatformGroups().stream()
                     .flatMap(platformGroup -> platformGroup.getPlatforms().stream())
@@ -93,6 +94,8 @@ public class GameView extends JPanel implements Observer {
             if (gameModelCurrentRoom != null && !gameModelCurrentRoom.equals(currentRoom)) {
                 currentRoom = gameModelCurrentRoom;
                 roomView.setRoom(currentRoom);
+            } else if (gameModelCurrentRoom == null) {
+                currentRoom = null;
             }
         }
     }

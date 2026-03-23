@@ -1,6 +1,7 @@
 package com.sapienza.jimpossiblemission.model;
 
 import com.sapienza.jimpossiblemission.Direction;
+import com.sapienza.jimpossiblemission.model.CollisionManager.CollisionResult;
 import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 
 import java.awt.*;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Observable;
 
 public class GameModel extends Observable {
-    private final TileMapModel tileMap;
+    private final TileMapModel elevatorTileMapModel;
     private final List<Room> rooms;
     private final GameWorld gameWorld;
     private final ElevatorModel elevator;
@@ -17,14 +18,14 @@ public class GameModel extends Observable {
     private Room currentRoom;
     private int frameCounter = 0;
 
-    public GameModel(TileMapModel tileMap, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
-        this.tileMap = tileMap;
+    public GameModel(TileMapModel elevatorTileMapModel, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
+        this.elevatorTileMapModel = elevatorTileMapModel;
         this.rooms = rooms;
         this.gameWorld = gameWorld;
         this.elevator = elevator;
         this.agent = agent;
         this.collisionManager = collisionManager;
-        currentRoom = rooms.get(0);
+        currentRoom = null;
     }
 
     public void update() {
@@ -44,12 +45,16 @@ public class GameModel extends Observable {
 
     private void updateEntities() {
         // 0. Recupero le aree solide
-        // List<Rectangle> collisionObjects = tileMap.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
-        // collisionObjects.add(elevator.getBoundingBox());
-        List<Rectangle> collisionObjects = rooms.get(0).getCollisionObjects();
-        rooms.get(0).getPlatformGroups().forEach(PlatformGroup::update);
+        List<Rectangle> collisionObjects;
+        if (isInElevatorArea()) {
+            collisionObjects = elevatorTileMapModel.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
+            collisionObjects.add(elevator.getBoundingBox());
+        } else {
+            collisionObjects = rooms.get(0).getCollisionObjects();
+            rooms.get(0).getPlatformGroups().forEach(PlatformGroup::update);
+        }
 
-        // 1. Aggiorna salto/gravitá
+        // 1. Aggiorna salto/gravità
         agent.updateJump(); // buffer salto
         if (!agent.isOnGround()) {
             agent.applyGravity();
@@ -65,7 +70,7 @@ public class GameModel extends Observable {
         }
 
         int dx = inputDx;
-        CollisionManager.CollisionResult colX = collisionManager.checkCollision(collisionObjects, agent.getBoundingBox(), dx, 0);
+        CollisionResult colX = collisionManager.checkCollision(collisionObjects, agent.getBoundingBox(), dx, 0);
 
         if (!colX.collided) {
             agent.setX(agent.getX() + dx);
@@ -78,7 +83,7 @@ public class GameModel extends Observable {
         int dy = (int) agent.getVelocityY();
         if (Math.abs(dy) < 1) dy = 0;
 
-        CollisionManager.CollisionResult colY = collisionManager.checkCollision(collisionObjects, agent.getBoundingBox(), 0, dy);
+        CollisionResult colY = collisionManager.checkCollision(collisionObjects, agent.getBoundingBox(), 0, dy);
 
         if (!colY.collided) {
             agent.setY(agent.getY() + dy);
@@ -103,7 +108,7 @@ public class GameModel extends Observable {
             frameCounter = 0;
         }
         rooms.get(0).getEnemies().forEach(Enemy::update);
-        // 4. Aggiorna l’elevatore
+        // 4. Aggiorna l'ascensore
         elevator.update();
     }
 
@@ -111,6 +116,7 @@ public class GameModel extends Observable {
         agent.setEnabled(!elevator.isMoving());
         elevator.setEnabled(!agent.isJumping() && elevator.isAgentOnElevator(agent));
         handleAgentOnPlatform();
+        handleRoomTransition();
     }
 
     private void updateGameLogic() {
@@ -146,9 +152,43 @@ public class GameModel extends Observable {
         }
     }
 
+    public void handleRoomTransition() {
+        if (isInElevatorArea()) {
+            RoomCode roomCode = null;
+            for (RoomTrigger roomTrigger : elevatorTileMapModel.getRoomTriggers(gameWorld.getWorldX(), gameWorld.getWorldY())) {
+                CollisionResult collisionResult = collisionManager.checkPointCollision(roomTrigger.getX(), roomTrigger.getY(), agent.getBoundingBox());
+                if (collisionResult.collided) {
+                    roomCode = roomTrigger.getCode();
+                    break;
+                }
+            }
+            if (roomCode != null) {
+                loadRoom(roomCode);
+            }
+        } else {
+            Position exit = currentRoom.getExit();
+            CollisionResult collisionResult = collisionManager.checkPointCollision(exit.getX(), exit.getY(), agent.getBoundingBox());
+            if (collisionResult.collided) {
+                loadElevatorArea();
+            }
+        }
+    }
 
-    public GameWorld getGameWorld() {
-        return gameWorld;
+    private boolean isInElevatorArea() {
+        return currentRoom == null;
+    }
+
+    private void loadElevatorArea() {
+        RoomTrigger roomTrigger = elevatorTileMapModel.getRoomTrigger(currentRoom.getCode());
+        agent.setX(roomTrigger.getX());
+        agent.setY(roomTrigger.getY());
+        currentRoom = null;
+    }
+
+    private void loadRoom(RoomCode roomCode) {
+        currentRoom = rooms.stream().filter(r -> r.getCode().equals(roomCode)).findFirst().orElseThrow(IllegalStateException::new);
+        agent.setX(currentRoom.getSpawnPosition().getX() - 100);
+        agent.setY(currentRoom.getSpawnPosition().getY());
     }
 
     public void movePlatform(Direction direction) {
@@ -156,6 +196,10 @@ public class GameModel extends Observable {
                 .filter(group -> group.getPlatforms().stream().anyMatch(Platform::isEnabled))
                 .findFirst()
                 .ifPresent(group -> group.move(direction));
+    }
+
+    public GameWorld getGameWorld() {
+        return gameWorld;
     }
 
     public ElevatorModel getElevator() {
@@ -170,8 +214,8 @@ public class GameModel extends Observable {
         return collisionManager;
     }
 
-    public TileMapModel getTileMap() {
-        return tileMap;
+    public TileMapModel getElevatorTileMapModel() {
+        return elevatorTileMapModel;
     }
 
     public List<Room> getRooms() {
@@ -180,5 +224,21 @@ public class GameModel extends Observable {
 
     public Room getCurrentRoom() {
         return currentRoom;
+    }
+
+    public void up() {
+        if (isInElevatorArea()) {
+            elevator.startMoving(Direction.UP);
+        } else {
+            movePlatform(Direction.UP);
+        }
+    }
+
+    public void down() {
+        if (isInElevatorArea()) {
+            elevator.startMoving(Direction.DOWN);
+        } else {
+            movePlatform(Direction.DOWN);
+        }
     }
 }

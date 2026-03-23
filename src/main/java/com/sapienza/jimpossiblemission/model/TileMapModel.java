@@ -1,5 +1,6 @@
 package com.sapienza.jimpossiblemission.model;
 
+import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 import org.mapeditor.core.MapObject;
 import org.mapeditor.core.ObjectGroup;
 import org.mapeditor.io.TMXMapReader;
@@ -17,6 +18,7 @@ public class TileMapModel {
     private final org.mapeditor.core.Map map;
     private final Map<Integer, BufferedImage> tileImages = new HashMap<>();
     private final List<Rectangle> collisionObjects = new ArrayList<>();
+    private final List<RoomTrigger> roomTriggers = new ArrayList<>();
 
     public TileMapModel(String tmxPath, String tilesetPath) {
         BufferedImage tileset;
@@ -50,6 +52,23 @@ public class TileMapModel {
         }
 
         loadCollisionObjects();
+        loadRoomTriggers();
+    }
+
+    private void loadRoomTriggers() {
+        ObjectGroup rooms = map.getLayers().stream()
+                .filter(layer -> layer instanceof ObjectGroup)
+                .map(layer -> (ObjectGroup) layer)
+                .filter(objectGroup -> "rooms".equals(objectGroup.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Collision Layer non trovato"));
+        for (MapObject object : rooms.getObjects()) {
+            RoomTrigger roomTrigger = new RoomTrigger(
+                    (int) object.getX(),
+                    (int) object.getY(),
+                    object.getProperties().getProperty("room-id"));
+            roomTriggers.add(roomTrigger);
+        }
     }
 
     private void loadCollisionObjects() {
@@ -59,15 +78,13 @@ public class TileMapModel {
                 .filter(objectGroup -> "solid-area".equals(objectGroup.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Collision Layer non trovato"));
-        if (collisionLayer != null) {
-            for (MapObject object : collisionLayer.getObjects()) {
-                Rectangle rectObject = new Rectangle(
-                        (int) object.getX(),
-                        (int) object.getY(),
-                        object.getWidth().intValue(),
-                        object.getHeight().intValue());
-                collisionObjects.add(rectObject);
-            }
+        for (MapObject object : collisionLayer.getObjects()) {
+            Rectangle rectObject = new Rectangle(
+                    (int) object.getX(),
+                    (int) object.getY(),
+                    object.getWidth().intValue(),
+                    object.getHeight().intValue());
+            collisionObjects.add(rectObject);
         }
     }
 
@@ -109,4 +126,17 @@ public class TileMapModel {
                 .map(r -> new Rectangle((int) (r.getX() - dx), (int) (r.getY() - dy), r.width, r.height))
                 .collect(Collectors.toList());
     }
+
+    public List<RoomTrigger> getRoomTriggers(int dx, int dy) {
+        return roomTriggers.stream()
+                .map(r -> new RoomTrigger(r.getX() - dx, r.getY() - dy, r.getCode()))
+                .collect(Collectors.toList());
+    }
+
+    public RoomTrigger getRoomTrigger(RoomCode roomCode) {
+        return roomTriggers.stream()
+                .filter(p -> p.getCode().equals(roomCode)).findFirst()
+                .orElseThrow(IllegalStateException::new);
+    }
+
 }

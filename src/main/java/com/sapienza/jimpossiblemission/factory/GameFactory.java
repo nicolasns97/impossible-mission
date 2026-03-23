@@ -40,18 +40,18 @@ public class GameFactory {
     private static final int ELEVATOR_BOUNDING_BOX_WIDTH = 192;
     private static final int ELEVATOR_BOUNDING_BOX_HEIGHT = 352;
 
-    private static final String TMX_PATH = "src/main/resources/map/test.tmx";
-    private static final String TILESET_PATH = "/map/tileset_test.png";
+    private static final String ELEVATOR_TMX_PATH = "src/main/resources/map/elevator.tmx";
+    private static final String TILESET_PATH = "/map/elevator_tileset.png";
     private static final String ELEVATOR_BASE_SPRITE_PATH = "/elevator/base_sprite.png";
     private static final String ELEVATOR_DOOR_SPRITE_PATH = "/elevator/doors_sprite.png";
     public static final String ROOF_SPRITE_PATH = "/elevator/roof_sprite.png";
     private static final String AGENT_SPRITE_DIRECTORY = "/agent";
 
     public static GameController createGame() {
-        TileMapModel tileMapModel = new TileMapModel(TMX_PATH, TILESET_PATH);
-        GameModel gameModel = createGameModel(tileMapModel);
+        TileMapModel elevatorTileMapModel = new TileMapModel(ELEVATOR_TMX_PATH, TILESET_PATH);
+        GameModel gameModel = createGameModel(elevatorTileMapModel);
 
-        TileMapView tileMapView = new TileMapView(tileMapModel);
+        TileMapView tileMapView = new TileMapView(elevatorTileMapModel);
         ElevatorView elevatorView = new ElevatorView(ELEVATOR_BASE_SPRITE_PATH, ELEVATOR_DOOR_SPRITE_PATH, ROOF_SPRITE_PATH);
         AgentView agentView = new AgentView(AGENT_SPRITE_DIRECTORY);
         GameView gameView = new GameView(tileMapView,
@@ -73,13 +73,19 @@ public class GameFactory {
                 ELEVATOR_BOUNDING_BOX_HEIGHT);
         List<Room> rooms = new ArrayList<>();
         rooms.add(createRoom(RoomCode.ECHO_CHAMBER));
-        AgentModel agent = new AgentModel(rooms.get(0).getSpawnPosition().getX()-100,//300,
+        /*AgentModel agent = new AgentModel(rooms.get(0).getSpawnPosition().getX()-100,//300,
                 rooms.get(0).getSpawnPosition().getY()-AGENT_BOUNDING_BOX_HEIGHT,//spawnPoint.y,
                 AGENT_BOUNDING_BOX_WIDTH,
                 AGENT_BOUNDING_BOX_HEIGHT,
                 AGENT_SPEED,
                 Direction.LEFT);
-
+        */
+        AgentModel agent = new AgentModel(spawnPoint.x,
+                spawnPoint.y,
+                AGENT_BOUNDING_BOX_WIDTH,
+                AGENT_BOUNDING_BOX_HEIGHT,
+                AGENT_SPEED,
+                Direction.LEFT);
         CollisionManager collisionManager = new CollisionManager();
 
 
@@ -95,6 +101,7 @@ public class GameFactory {
 
             room = new Room(code,
                     roomMetadata.getSpawnPosition(),
+                    roomMetadata.getExit(),
                     roomMetadata.getCollisionObjects(),
                     EnemyFactory.createEnemies(roomMetadata.getEnemySpawnPositions()),
                     null,
