@@ -66,7 +66,6 @@ public class GameController extends AbstractGameController {
     @Override
     protected void onFrame() {
         gameModel.update();
-        gameView.repaint();
     }
 
     public GameView getGameView() {

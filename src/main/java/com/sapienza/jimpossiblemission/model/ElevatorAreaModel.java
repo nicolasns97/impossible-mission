@@ -14,13 +14,13 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TileMapModel {
+public class ElevatorAreaModel {
     private final org.mapeditor.core.Map map;
     private final Map<Integer, BufferedImage> tileImages = new HashMap<>();
     private final List<Rectangle> collisionObjects = new ArrayList<>();
     private final List<RoomTrigger> roomTriggers = new ArrayList<>();
 
-    public TileMapModel(String tmxPath, String tilesetPath) {
+    public ElevatorAreaModel(String tmxPath, String tilesetPath) {
         BufferedImage tileset;
         try {
             tileset = ImageIO.read(Objects.requireNonNull(getClass().getResource(tilesetPath)));

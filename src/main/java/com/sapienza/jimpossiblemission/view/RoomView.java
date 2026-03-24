@@ -1,5 +1,6 @@
 package com.sapienza.jimpossiblemission.view;
 
+import com.sapienza.jimpossiblemission.model.Entity;
 import com.sapienza.jimpossiblemission.model.PatrollingRobot;
 import com.sapienza.jimpossiblemission.model.Position;
 import com.sapienza.jimpossiblemission.model.Room;
@@ -27,12 +28,14 @@ public class RoomView {
         }
     }
 
-    public void draw(Graphics2D g, List<Position> platforms) {
+    public void draw(Graphics2D g) {
+        List<Position> platforms = room.getPlatformGroups().stream()
+                .flatMap(platformGroup -> platformGroup.getPlatforms().stream())
+                .map(Entity::getPosition)
+                .collect(Collectors.toList());
         g.drawImage(roomImage, 0, 0, null);
-        if (platforms != null) {
-            for (Position platform : platforms) {
-                g.drawImage(platformImage, platform.getX(), platform.getY(), platformImage.getWidth(), platformImage.getHeight(), null);
-            }
+        for (Position platform : platforms) {
+            g.drawImage(platformImage, platform.getX(), platform.getY(), platformImage.getWidth(), platformImage.getHeight(), null);
         }
         if (robots != null) {
             robots.forEach(robot -> robot.draw(g));

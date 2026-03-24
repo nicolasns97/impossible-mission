@@ -9,7 +9,7 @@ import com.sapienza.jimpossiblemission.model.RoomMetadataReader.RoomMetadata;
 import com.sapienza.jimpossiblemission.view.AgentView;
 import com.sapienza.jimpossiblemission.view.ElevatorView;
 import com.sapienza.jimpossiblemission.view.GameView;
-import com.sapienza.jimpossiblemission.view.TileMapView;
+import com.sapienza.jimpossiblemission.view.ElevatorAreaView;
 import org.mapeditor.io.TMXMapReader;
 
 import javax.xml.bind.JAXBException;
@@ -48,24 +48,25 @@ public class GameFactory {
     private static final String AGENT_SPRITE_DIRECTORY = "/agent";
 
     public static GameController createGame() {
-        TileMapModel elevatorTileMapModel = new TileMapModel(ELEVATOR_TMX_PATH, TILESET_PATH);
-        GameModel gameModel = createGameModel(elevatorTileMapModel);
+        ElevatorAreaModel elevatorElevatorAreaModel = new ElevatorAreaModel(ELEVATOR_TMX_PATH, TILESET_PATH);
+        GameModel gameModel = createGameModel(elevatorElevatorAreaModel);
 
-        TileMapView tileMapView = new TileMapView(elevatorTileMapModel);
-        ElevatorView elevatorView = new ElevatorView(ELEVATOR_BASE_SPRITE_PATH, ELEVATOR_DOOR_SPRITE_PATH, ROOF_SPRITE_PATH);
-        AgentView agentView = new AgentView(AGENT_SPRITE_DIRECTORY);
-        GameView gameView = new GameView(tileMapView,
+        ElevatorAreaView elevatorAreaView = new ElevatorAreaView(elevatorElevatorAreaModel);
+        ElevatorView elevatorView = new ElevatorView(gameModel.getElevator(), ELEVATOR_BASE_SPRITE_PATH, ELEVATOR_DOOR_SPRITE_PATH, ROOF_SPRITE_PATH);
+        AgentView agentView = new AgentView(gameModel.getAgent(), AGENT_SPRITE_DIRECTORY);
+        GameView gameView = new GameView(gameModel,
+                elevatorAreaView,
                 elevatorView,
                 agentView);
 
         return new GameController(gameModel, gameView);
     }
 
-    private static GameModel createGameModel(TileMapModel tileMapModel) {
+    private static GameModel createGameModel(ElevatorAreaModel elevatorAreaModel) {
         GameWorld gameWorld = new GameWorld(0, 0);
-        Point spawnPoint = tileMapModel.getAgentSpawnPoint();
+        Point spawnPoint = elevatorAreaModel.getAgentSpawnPoint();
         ElevatorModel elevator = new ElevatorModel(gameWorld,
-                tileMapModel.getElevatorStops(),
+                elevatorAreaModel.getElevatorStops(),
                 ELEVATOR_SPEED,
                 ELEVATOR_SPAWN_X,
                 ELEVATOR_SPAWN_Y,
@@ -73,13 +74,6 @@ public class GameFactory {
                 ELEVATOR_BOUNDING_BOX_HEIGHT);
         List<Room> rooms = new ArrayList<>();
         rooms.add(createRoom(RoomCode.ECHO_CHAMBER));
-        /*AgentModel agent = new AgentModel(rooms.get(0).getSpawnPosition().getX()-100,//300,
-                rooms.get(0).getSpawnPosition().getY()-AGENT_BOUNDING_BOX_HEIGHT,//spawnPoint.y,
-                AGENT_BOUNDING_BOX_WIDTH,
-                AGENT_BOUNDING_BOX_HEIGHT,
-                AGENT_SPEED,
-                Direction.LEFT);
-        */
         AgentModel agent = new AgentModel(spawnPoint.x,
                 spawnPoint.y,
                 AGENT_BOUNDING_BOX_WIDTH,
@@ -89,7 +83,7 @@ public class GameFactory {
         CollisionManager collisionManager = new CollisionManager();
 
 
-        return new GameModel(tileMapModel, rooms, gameWorld, elevator, agent, collisionManager);
+        return new GameModel(elevatorAreaModel, rooms, gameWorld, elevator, agent, collisionManager);
     }
 
     public static Room createRoom(RoomCode code) {

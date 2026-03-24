@@ -1,23 +1,23 @@
 package com.sapienza.jimpossiblemission.view;
 
-import com.sapienza.jimpossiblemission.model.TileMapModel;
+import com.sapienza.jimpossiblemission.model.ElevatorAreaModel;
 import org.mapeditor.core.Tile;
 import org.mapeditor.core.TileLayer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class TileMapView {
-    private final TileMapModel tileMapModel;
+public class ElevatorAreaView {
+    private final ElevatorAreaModel elevatorAreaModel;
 
-    public TileMapView(TileMapModel tileMapModel) {
-        this.tileMapModel = tileMapModel;
+    public ElevatorAreaView(ElevatorAreaModel elevatorAreaModel) {
+        this.elevatorAreaModel = elevatorAreaModel;
     }
 
     public void draw(Graphics g, int cameraX, int cameraY, int screenWidth, int screenHeight) {
-        TileLayer layer = (TileLayer) tileMapModel.getMap().getLayer(0);
-        int tileWidth = tileMapModel.getMap().getTileWidth();
-        int tileHeight = tileMapModel.getMap().getTileHeight();
+        TileLayer layer = (TileLayer) elevatorAreaModel.getMap().getLayer(0);
+        int tileWidth = elevatorAreaModel.getMap().getTileWidth();
+        int tileHeight = elevatorAreaModel.getMap().getTileHeight();
 
         // Calcola tile di partenza in base alla camera
         int startCol = cameraX / tileWidth;
@@ -39,7 +39,7 @@ public class TileMapView {
                 if (mapCol >= 0 && mapRow >= 0 && mapCol < layer.getWidth() && mapRow < layer.getHeight()) {
                     Tile tile = layer.getTileAt(mapCol, mapRow);
                     if (tile != null) {
-                        BufferedImage image = tileMapModel.getTileImage(tile.getId());
+                        BufferedImage image = elevatorAreaModel.getTileImage(tile.getId());
                         if (image != null) {
                             int drawX = col * tileWidth - offsetX;
                             int drawY = row * tileHeight - offsetY;

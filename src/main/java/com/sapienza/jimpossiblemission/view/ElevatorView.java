@@ -1,6 +1,7 @@
 package com.sapienza.jimpossiblemission.view;
 
 import com.sapienza.jimpossiblemission.Debug;
+import com.sapienza.jimpossiblemission.model.ElevatorModel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -9,11 +10,13 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class ElevatorView {
+    private final ElevatorModel model;
     private final BufferedImage baseSprite;
     private final BufferedImage doorsSprite;
     private final BufferedImage roofSprite;
 
-    public ElevatorView(String baseSpritePath, String doorsSpritePath, String roofSpritePath) {
+    public ElevatorView(ElevatorModel model, String baseSpritePath, String doorsSpritePath, String roofSpritePath) {
+        this.model = model;
         try {
             baseSprite = ImageIO.read(Objects.requireNonNull(getClass().getResource(baseSpritePath)));
             doorsSprite = ImageIO.read(Objects.requireNonNull(getClass().getResource(doorsSpritePath)));
@@ -23,16 +26,16 @@ public class ElevatorView {
         }
     }
 
-    public void drawLift(Graphics2D g, int x, int y) {
-        g.drawImage(baseSprite, x, y, baseSprite.getWidth(), baseSprite.getHeight(), null);
+    public void drawLift(Graphics2D g) {
+        g.drawImage(baseSprite, model.getX(), model.getY(), baseSprite.getWidth(), baseSprite.getHeight(), null);
     }
 
-    public void drawDoors(Graphics2D g, int x, int y) {
-        g.drawImage(doorsSprite, x, y, doorsSprite.getWidth(), doorsSprite.getHeight(), null);
+    public void drawDoors(Graphics2D g) {
+        g.drawImage(doorsSprite, model.getX(), model.getY(), doorsSprite.getWidth(), doorsSprite.getHeight(), null);
         if (Debug.getInstance().isDebug()) {
             g.setColor(Color.BLUE);
-            g.drawRect(x, y+baseSprite.getHeight()-32, baseSprite.getWidth(), 32);
-            g.drawRect(x + baseSprite.getWidth() / 2 - 16, y+baseSprite.getHeight()-32, 32, 32);
+            g.drawRect(model.getX(), model.getY()+baseSprite.getHeight()-32, baseSprite.getWidth(), 32);
+            g.drawRect(model.getX() + baseSprite.getWidth() / 2 - 16, model.getY()+baseSprite.getHeight()-32, 32, 32);
         }
     }
 

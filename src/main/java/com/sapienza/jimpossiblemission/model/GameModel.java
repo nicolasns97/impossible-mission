@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Observable;
 
 public class GameModel extends Observable {
-    private final TileMapModel elevatorTileMapModel;
+    private final ElevatorAreaModel elevatorElevatorAreaModel;
     private final List<Room> rooms;
     private final GameWorld gameWorld;
     private final ElevatorModel elevator;
@@ -18,8 +18,8 @@ public class GameModel extends Observable {
     private Room currentRoom;
     private int frameCounter = 0;
 
-    public GameModel(TileMapModel elevatorTileMapModel, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
-        this.elevatorTileMapModel = elevatorTileMapModel;
+    public GameModel(ElevatorAreaModel elevatorElevatorAreaModel, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
+        this.elevatorElevatorAreaModel = elevatorElevatorAreaModel;
         this.rooms = rooms;
         this.gameWorld = gameWorld;
         this.elevator = elevator;
@@ -47,7 +47,7 @@ public class GameModel extends Observable {
         // 0. Recupero le aree solide
         List<Rectangle> collisionObjects;
         if (isInElevatorArea()) {
-            collisionObjects = elevatorTileMapModel.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
+            collisionObjects = elevatorElevatorAreaModel.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
             collisionObjects.add(elevator.getBoundingBox());
         } else {
             collisionObjects = rooms.get(0).getCollisionObjects();
@@ -155,7 +155,7 @@ public class GameModel extends Observable {
     public void handleRoomTransition() {
         if (isInElevatorArea()) {
             RoomCode roomCode = null;
-            for (RoomTrigger roomTrigger : elevatorTileMapModel.getRoomTriggers(gameWorld.getWorldX(), gameWorld.getWorldY())) {
+            for (RoomTrigger roomTrigger : elevatorElevatorAreaModel.getRoomTriggers(gameWorld.getWorldX(), gameWorld.getWorldY())) {
                 CollisionResult collisionResult = collisionManager.checkPointCollision(roomTrigger.getX(), roomTrigger.getY(), agent.getBoundingBox());
                 if (collisionResult.collided) {
                     roomCode = roomTrigger.getCode();
@@ -174,12 +174,12 @@ public class GameModel extends Observable {
         }
     }
 
-    private boolean isInElevatorArea() {
+    public boolean isInElevatorArea() {
         return currentRoom == null;
     }
 
     private void loadElevatorArea() {
-        RoomTrigger roomTrigger = elevatorTileMapModel.getRoomTrigger(currentRoom.getCode());
+        RoomTrigger roomTrigger = elevatorElevatorAreaModel.getRoomTrigger(currentRoom.getCode());
         agent.setX(roomTrigger.getX());
         agent.setY(roomTrigger.getY());
         currentRoom = null;
@@ -214,8 +214,8 @@ public class GameModel extends Observable {
         return collisionManager;
     }
 
-    public TileMapModel getElevatorTileMapModel() {
-        return elevatorTileMapModel;
+    public ElevatorAreaModel getElevatorTileMapModel() {
+        return elevatorElevatorAreaModel;
     }
 
     public List<Room> getRooms() {

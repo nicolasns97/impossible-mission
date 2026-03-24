@@ -2,6 +2,7 @@ package com.sapienza.jimpossiblemission.view;
 
 import com.sapienza.jimpossiblemission.Debug;
 import com.sapienza.jimpossiblemission.Direction;
+import com.sapienza.jimpossiblemission.model.AgentModel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class AgentView {
+    private final AgentModel model;
     private final String RUN_DIR = "/run";
     private final String JUMP_DIR = "/jump";
 
@@ -28,7 +30,8 @@ public class AgentView {
     int jumpFrameDelay = 4;
     Direction jumpDirection;
 
-    public AgentView(String agentDirectory) {
+    public AgentView(AgentModel model, String agentDirectory) {
+        this.model = model;
         try {
             for (int i = 0; i < 12; i++) {
                 BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + JUMP_DIR + "/" + (i+1) + ".png")));
@@ -45,10 +48,11 @@ public class AgentView {
         }
     }
 
-    public void draw(Graphics2D g, Direction direction, boolean moving, int x, int y, boolean jumping) {
-        BufferedImage image = null;
+    public void draw(Graphics2D g) {
+        BufferedImage image;
+        Direction direction = model.getDirection();
 
-        if (jumping) {
+        if (model.isJumping()) {
             // logica salto
             if (jumpFrameIndex == 0) {
                 jumpDirection = direction;
@@ -63,7 +67,7 @@ public class AgentView {
             runFrameIndex = 0;
             runFrameCounter = 0;
 
-        } else if (moving) {
+        } else if (model.isMoving()) {
             // logica corsa
             runFrameCounter++;
             if (runFrameCounter >= runFrameDelay) {
@@ -84,16 +88,16 @@ public class AgentView {
             image = (direction == Direction.LEFT) ? spritesRunLeft[runFrameIndex] : spritesRunRight[runFrameIndex];
         }
 
-        g.drawImage(image, x, y, image.getWidth(), image.getHeight(), null);
+        g.drawImage(image, model.getX(), model.getY(), image.getWidth(), image.getHeight(), null);
 
         if (Debug.getInstance().isDebug()) {
             g.setColor(Color.RED);
             int marginX = 20; // margine laterale
             int marginY = 0;  // margine superiore e inferiore
-            if (jumping) {
-                g.drawRect(x + marginX, y + marginY + 50, image.getWidth() - 2 * marginX, image.getHeight() - 50);
+            if (model.isJumping()) {
+                g.drawRect(model.getX() + marginX, model.getY() + marginY + 50, image.getWidth() - 2 * marginX, image.getHeight() - 50);
             } else {
-                g.drawRect(x + marginX, y + marginY, image.getWidth() - 2 * marginX, image.getHeight());
+                g.drawRect(model.getX() + marginX, model.getY() + marginY, image.getWidth() - 2 * marginX, image.getHeight());
             }
         }
     }
