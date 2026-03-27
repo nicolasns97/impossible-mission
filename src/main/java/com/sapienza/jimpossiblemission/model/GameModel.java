@@ -50,8 +50,8 @@ public class GameModel extends Observable {
             collisionObjects = elevatorElevatorAreaModel.getCollisionObjects(gameWorld.getWorldX(), gameWorld.getWorldY());
             collisionObjects.add(elevator.getBoundingBox());
         } else {
-            collisionObjects = rooms.get(0).getCollisionObjects();
-            rooms.get(0).getPlatformGroups().forEach(PlatformGroup::update);
+            collisionObjects = currentRoom.getCollisionObjects();
+            currentRoom.getPlatformGroups().forEach(PlatformGroup::update);
         }
 
         // 1. Aggiorna salto/gravità
@@ -99,15 +99,18 @@ public class GameModel extends Observable {
             }
         }
 
-        frameCounter ++;
-        if (frameCounter == 120) {
-            for (Enemy e : rooms.get(0).getEnemies()) {
-                PatrollingRobot p = (PatrollingRobot) e;
-                p.setDirection(p.getDirection() == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
+        if (!isInElevatorArea()) {
+            frameCounter ++;
+            if (frameCounter == 120) {
+                //TODO change logic such that enemies turn back on collision end
+                for (Enemy e : currentRoom.getEnemies()) {
+                    PatrollingRobot p = (PatrollingRobot) e;
+                    p.setDirection(p.getDirection() == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
+                }
+                frameCounter = 0;
             }
-            frameCounter = 0;
+            currentRoom.getEnemies().forEach(Enemy::update);
         }
-        rooms.get(0).getEnemies().forEach(Enemy::update);
         // 4. Aggiorna l'ascensore
         elevator.update();
     }
@@ -124,8 +127,9 @@ public class GameModel extends Observable {
     }
 
     private void handleAgentOnPlatform() {
+        if (isInElevatorArea()) return;
         Rectangle agentBox = agent.getBoundingBox();
-        List<PlatformGroup> platformGroups = rooms.get(0).getPlatformGroups();
+        List<PlatformGroup> platformGroups = currentRoom.getPlatformGroups();
 
         for (PlatformGroup platformGroup : platformGroups) {
             for (Platform platform : platformGroup.getPlatforms()) {
@@ -179,9 +183,14 @@ public class GameModel extends Observable {
     }
 
     private void loadElevatorArea() {
-        RoomTrigger roomTrigger = elevatorElevatorAreaModel.getRoomTrigger(currentRoom.getCode());
-        agent.setX(roomTrigger.getX());
-        agent.setY(roomTrigger.getY());
+        RoomTrigger roomTrigger = elevatorElevatorAreaModel.getRoomTrigger(currentRoom.getCode(), gameWorld.getWorldX(), gameWorld.getWorldY());
+
+        int offset = 60;
+        if (roomTrigger.getX() > elevatorElevatorAreaModel.getAgentSpawnPoint().getX()) {
+            offset *= -1;
+        }
+        agent.setX(roomTrigger.getX() + offset);
+        agent.setY(roomTrigger.getY()-20);
         currentRoom = null;
     }
 
@@ -189,10 +198,14 @@ public class GameModel extends Observable {
         currentRoom = rooms.stream().filter(r -> r.getCode().equals(roomCode)).findFirst().orElseThrow(IllegalStateException::new);
         agent.setX(currentRoom.getSpawnPosition().getX() - 100);
         agent.setY(currentRoom.getSpawnPosition().getY());
+        frameCounter = 0;
+        for (Enemy e : currentRoom.getEnemies()) {
+            e.reset();
+        }
     }
 
     public void movePlatform(Direction direction) {
-        rooms.get(0).getPlatformGroups().stream()
+        currentRoom.getPlatformGroups().stream()
                 .filter(group -> group.getPlatforms().stream().anyMatch(Platform::isEnabled))
                 .findFirst()
                 .ifPresent(group -> group.move(direction));

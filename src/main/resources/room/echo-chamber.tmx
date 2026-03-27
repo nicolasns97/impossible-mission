@@ -78,12 +78,12 @@
   </object>
  </objectgroup>
  <objectgroup id="6" name="spawn">
-  <object id="31" x="1219" y="51">
+  <object id="31" x="1223" y="56">
    <point/>
   </object>
  </objectgroup>
  <objectgroup id="10" name="exit">
-  <object id="55" x="1266" y="96">
+  <object id="55" x="1270" y="96">
    <point/>
   </object>
  </objectgroup>

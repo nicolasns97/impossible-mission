@@ -6,18 +6,18 @@ import com.sapienza.jimpossiblemission.controller.GameController;
 import com.sapienza.jimpossiblemission.model.*;
 import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 import com.sapienza.jimpossiblemission.model.RoomMetadataReader.RoomMetadata;
-import com.sapienza.jimpossiblemission.view.AgentView;
-import com.sapienza.jimpossiblemission.view.ElevatorView;
-import com.sapienza.jimpossiblemission.view.GameView;
-import com.sapienza.jimpossiblemission.view.ElevatorAreaView;
+import com.sapienza.jimpossiblemission.view.*;
 import org.mapeditor.io.TMXMapReader;
 
+import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Factory per creare e inizializzare i componenti principali del gioco.
@@ -54,12 +54,29 @@ public class GameFactory {
         ElevatorAreaView elevatorAreaView = new ElevatorAreaView(elevatorElevatorAreaModel);
         ElevatorView elevatorView = new ElevatorView(gameModel.getElevator(), ELEVATOR_BASE_SPRITE_PATH, ELEVATOR_DOOR_SPRITE_PATH, ROOF_SPRITE_PATH);
         AgentView agentView = new AgentView(gameModel.getAgent(), AGENT_SPRITE_DIRECTORY);
+        RoomView roomView = createRoomView(gameModel.getRooms());
         GameView gameView = new GameView(gameModel,
                 elevatorAreaView,
                 elevatorView,
-                agentView);
+                agentView,
+                roomView);
 
         return new GameController(gameModel, gameView);
+    }
+
+    private static RoomView createRoomView(List<Room> rooms) {
+        Map<RoomCode, BufferedImage> roomBackgroundMap = new HashMap<>();
+        Map<RoomCode, BufferedImage> platformSpriteMap = new HashMap<>();
+        try {
+            for (Room room : rooms) {
+                RoomCode roomCode = room.getCode();
+                roomBackgroundMap.put(roomCode, ImageIO.read(Objects.requireNonNull(GameFactory.class.getResourceAsStream(String.format("/room/%s.png", roomCode.getPath())))));
+                platformSpriteMap.put(roomCode, ImageIO.read(Objects.requireNonNull(GameFactory.class.getResourceAsStream(String.format("/platform/%s.png", roomCode.getPath())))));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new RoomView(roomBackgroundMap, platformSpriteMap);
     }
 
     private static GameModel createGameModel(ElevatorAreaModel elevatorAreaModel) {
@@ -72,8 +89,17 @@ public class GameFactory {
                 ELEVATOR_SPAWN_Y,
                 ELEVATOR_BOUNDING_BOX_WIDTH,
                 ELEVATOR_BOUNDING_BOX_HEIGHT);
+
         List<Room> rooms = new ArrayList<>();
         rooms.add(createRoom(RoomCode.ECHO_CHAMBER));
+        rooms.add(createRoom(RoomCode.SHADOW_VAULT));
+        rooms.add(createRoom(RoomCode.SILICON_LAB));
+        rooms.add(createRoom(RoomCode.SENTRY_HALL));
+        rooms.add(createRoom(RoomCode.DATA_GRID_ROOM));
+        rooms.add(createRoom(RoomCode.CONTROL_NODE));
+        rooms.add(createRoom(RoomCode.MECH_CORRIDOR));
+        rooms.add(createRoom(RoomCode.CORE_TERMINAL));
+
         AgentModel agent = new AgentModel(spawnPoint.x,
                 spawnPoint.y,
                 AGENT_BOUNDING_BOX_WIDTH,

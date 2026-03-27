@@ -133,9 +133,11 @@ public class ElevatorAreaModel {
                 .collect(Collectors.toList());
     }
 
-    public RoomTrigger getRoomTrigger(RoomCode roomCode) {
+    public RoomTrigger getRoomTrigger(RoomCode roomCode, int dx, int dy) {
         return roomTriggers.stream()
-                .filter(p -> p.getCode().equals(roomCode)).findFirst()
+                .filter(p -> p.getCode().equals(roomCode))
+                .map(p -> new RoomTrigger(p.getX() - dx, p.getY() - dy, p.getCode()))
+                .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
 

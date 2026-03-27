@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="40" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="80">
+ <editorsettings>
+  <export format="tmx"/>
+ </editorsettings>
+ <imagelayer id="4" name="Livello immagine 1">
+  <image source="shadow-vault.png" width="1280" height="640"/>
+ </imagelayer>
+ <objectgroup id="3" name="collision-objects">
+  <object id="3" x="0" y="154" width="544" height="24"/>
+  <object id="7" x="741" y="154" width="556" height="24"/>
+  <object id="12" x="741" y="309" width="556" height="24"/>
+  <object id="57" x="0" y="464" width="544" height="28"/>
+  <object id="59" x="0" y="619" width="544" height="21"/>
+  <object id="60" x="741" y="619" width="576" height="32"/>
+  <object id="62" x="889" y="436" width="156" height="28"/>
+  <object id="63" x="224" y="335" width="156" height="24"/>
+  <object id="65" x="637" y="154" width="27" height="27"/>
+  <object id="68" x="637" y="309" width="27" height="27"/>
+  <object id="69" x="637" y="464" width="27" height="27"/>
+  <object id="70" x="637" y="619" width="27" height="27"/>
+  <object id="71" x="0" y="178" width="32" height="448"/>
+  <object id="72" x="1256" y="-21" width="32" height="661"/>
+ </objectgroup>
+ <objectgroup id="9" name="platforms-stops">
+  <object id="73" x="544" y="154">
+   <properties>
+    <property name="spawn" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="77" x="544" y="309">
+   <point/>
+  </object>
+  <object id="78" x="544" y="464">
+   <point/>
+  </object>
+  <object id="79" x="544" y="619">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="7" name="enemies"/>
+ <objectgroup id="6" name="spawn">
+  <object id="74" x="101" y="50">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="10" name="exit">
+  <object id="76" x="13" y="96">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="8" name="containers"/>
+</map>

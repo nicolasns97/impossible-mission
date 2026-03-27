@@ -18,12 +18,12 @@ public class GameView extends JPanel implements Observer {
     private final AgentView agentView;
     private final RoomView roomView;
 
-    public GameView(GameModel gameModel, ElevatorAreaView elevatorAreaView, ElevatorView elevatorView, AgentView agentView) {
+    public GameView(GameModel gameModel, ElevatorAreaView elevatorAreaView, ElevatorView elevatorView, AgentView agentView, RoomView roomView) {
         this.gameModel = gameModel;
         this.elevatorAreaView = elevatorAreaView;
         this.elevatorView = elevatorView;
         this.agentView = agentView;
-        roomView = new RoomView();
+        this.roomView = roomView;
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true);

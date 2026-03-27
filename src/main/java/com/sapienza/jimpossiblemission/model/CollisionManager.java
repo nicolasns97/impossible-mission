@@ -28,10 +28,11 @@ public class CollisionManager {
 
     public CollisionResult checkPointCollision(int pointX, int pointY, Rectangle boundingBox) {
         if (boundingBox.contains(pointX, pointY)) {
-            return new CollisionResult(true, boundingBox, new Rectangle(pointX, pointY, 1, 1));
+            return new CollisionResult(true, boundingBox, new Rectangle(pointX, pointY, 10, 200));
         }
         return new CollisionResult(false, null, null);
     }
+
 
 
     public static class CollisionResult {
