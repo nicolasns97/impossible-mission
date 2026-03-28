@@ -7,6 +7,8 @@ import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 import java.awt.*;
 import java.util.List;
 import java.util.Observable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GameModel extends Observable {
     private final ElevatorAreaModel elevatorElevatorAreaModel;
@@ -16,6 +18,7 @@ public class GameModel extends Observable {
     private final AgentModel agent;
     private final CollisionManager collisionManager;
     private Room currentRoom;
+    private Interactable currentInteractable;
     private int frameCounter = 0;
 
     public GameModel(ElevatorAreaModel elevatorElevatorAreaModel, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
@@ -26,6 +29,7 @@ public class GameModel extends Observable {
         this.agent = agent;
         this.collisionManager = collisionManager;
         currentRoom = null;
+        currentInteractable = null;
     }
 
     public void update() {
@@ -120,6 +124,28 @@ public class GameModel extends Observable {
         elevator.setEnabled(!agent.isJumping() && elevator.isAgentOnElevator(agent));
         handleAgentOnPlatform();
         handleRoomTransition();
+        handleInteractables();
+    }
+
+    private void handleInteractables() {
+        if (isInElevatorArea()) return;
+
+        for (Container container : currentRoom.getContainers()) {
+            CollisionResult collisionResult = collisionManager.checkCollision(container.getBoundingBox(), agent.getBoundingBox());
+            if (collisionResult.collided) {
+                currentInteractable = container;
+                return;
+            }
+        }
+        if (currentRoom.getTerminal().isPresent()) {
+            Terminal terminal = currentRoom.getTerminal().get();
+            CollisionResult collisionResult = collisionManager.checkCollision(terminal.getBoundingBox(), agent.getBoundingBox());
+            if (collisionResult.collided) {
+                currentInteractable = terminal;
+                return;
+            }
+        }
+        currentInteractable = null;
     }
 
     private void updateGameLogic() {
@@ -244,7 +270,13 @@ public class GameModel extends Observable {
             elevator.startMoving(Direction.UP);
         } else {
             movePlatform(Direction.UP);
+            if (currentInteractable != null) {
+                currentInteractable.interact();
+            }
         }
+        // interactables (Terminal & Container)
+        // l'interactable deve essere "attivo" se l'agente è nel suo bounding box (o qualcosa di simile) e deve disattivarsi quando l'agente si allontana
+        // controllare se c'è un interactable attivo quando si usa key up per interagire
     }
 
     public void down() {

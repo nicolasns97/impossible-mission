@@ -4,6 +4,7 @@ import com.sapienza.jimpossiblemission.Direction;
 import com.sapienza.jimpossiblemission.Main;
 import com.sapienza.jimpossiblemission.controller.GameController;
 import com.sapienza.jimpossiblemission.model.*;
+import com.sapienza.jimpossiblemission.model.Container;
 import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 import com.sapienza.jimpossiblemission.model.RoomMetadataReader.RoomMetadata;
 import com.sapienza.jimpossiblemission.view.*;
@@ -124,14 +125,15 @@ public class GameFactory {
                     roomMetadata.getExit(),
                     roomMetadata.getCollisionObjects(),
                     EnemyFactory.createEnemies(roomMetadata.getEnemySpawnPositions()),
-                    null,
-                    null,
+                    roomMetadata.getContainers(),
+                    roomMetadata.getTerminal(),
                     PlatformFactory.createPlatformGroups(roomMetadata.getPlatforms(), roomMetadata.getPlatformsStops()));
         } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
         return room;
     }
+
 
     private static String getRoomPath(RoomCode code) {
         Path filePath = Paths.get("src", "main", "resources", "room", code.getPath() + ".tmx");

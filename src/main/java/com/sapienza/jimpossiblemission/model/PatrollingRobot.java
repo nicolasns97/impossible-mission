@@ -10,7 +10,7 @@ public class PatrollingRobot extends Enemy {
     private boolean enabled;
 
     public PatrollingRobot(int x, int y, int width, int height, Direction direction) {
-        super(x, y, width, height);
+        super(x, y-height, width, height);
         this.enabled = true;
         this.direction = direction;
     }

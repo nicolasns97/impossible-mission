@@ -1,10 +1,8 @@
 package com.sapienza.jimpossiblemission.model;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Room {
@@ -14,7 +12,7 @@ public class Room {
     private final List<Rectangle> collisionObjects;
     private final List<Enemy> enemies;
     private final List<Container> containers;
-    private final List<Terminal> terminals;
+    private final Terminal terminal;
     private final List<PlatformGroup> platformGroups;
 
     public Room(RoomCode code,
@@ -23,7 +21,7 @@ public class Room {
                 List<Rectangle> collisionObjects,
                 List<Enemy> enemies,
                 List<Container> containers,
-                List<Terminal> terminals,
+                Terminal terminal,
                 List<PlatformGroup> platformGroups) {
         this.code = code;
         this.spawnPosition = spawnPosition;
@@ -31,7 +29,7 @@ public class Room {
         this.collisionObjects = collisionObjects;
         this.enemies = enemies;
         this.containers = containers;
-        this.terminals = terminals;
+        this.terminal = terminal;
         this.platformGroups = platformGroups;
     }
 
@@ -61,8 +59,8 @@ public class Room {
         return containers;
     }
 
-    public List<Terminal> getTerminals() {
-        return terminals;
+    public Optional<Terminal> getTerminal() {
+        return Optional.ofNullable(terminal);
     }
 
     public List<PlatformGroup> getPlatformGroups() {

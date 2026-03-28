@@ -26,6 +26,10 @@ public class CollisionManager {
         return checkCollision(List.of(collisionObject), boundingBox, dx, dy);
     }
 
+    public CollisionResult checkCollision(Rectangle collisionObject, Rectangle boundingBox) {
+        return checkCollision(List.of(collisionObject), boundingBox, 0, 0);
+    }
+
     public CollisionResult checkPointCollision(int pointX, int pointY, Rectangle boundingBox) {
         if (boundingBox.contains(pointX, pointY)) {
             return new CollisionResult(true, boundingBox, new Rectangle(pointX, pointY, 10, 200));

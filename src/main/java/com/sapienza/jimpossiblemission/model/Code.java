@@ -1,10 +1,20 @@
 package com.sapienza.jimpossiblemission.model;
 
 public class Code implements Collectable {
-    CodeType type;
+    private final CodeType type;
+
+    public CodeType getType() {
+        return type;
+    }
+
+    public Code(CodeType type) {
+        this.type = type;
+    }
+
 
     public enum CodeType {
         PLATFORM_RESET,
-        SNOOZE
+        SNOOZE,
+        DOOR_KEY
     }
 }

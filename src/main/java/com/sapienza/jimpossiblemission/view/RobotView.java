@@ -28,6 +28,7 @@ public class RobotView {
     public RobotView(PatrollingRobot model) {
         this.model = model;
         try {
+            // TODO performance
             idle_left[0] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/robot/robot_idle_lx.png")));
             idle_left[1] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/robot/robot_idle_blink_lx.png")));
             idle_right[0] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/robot/robot_idle_rx.png")));
@@ -71,9 +72,9 @@ public class RobotView {
         }
 
         if (state == State.IDLE) {
-            g.drawImage(idle_left[frameIndex], model.getX(), model.getY()-75, 75, 75, null);
+            g.drawImage(idle_left[frameIndex], model.getX(), model.getY(), 75, 75, null);
         } else if (state == State.ROTATE) {
-            g.drawImage(rotate[frameIndex], model.getX(), model.getY()-75, 75, 75, null);
+            g.drawImage(rotate[frameIndex], model.getX(), model.getY(), 75, 75, null);
         }
     }
 }

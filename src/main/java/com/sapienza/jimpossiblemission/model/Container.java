@@ -5,18 +5,18 @@ import java.util.Optional;
 
 public class Container extends Entity implements Interactable {
     private final ContainerType type;
+    private final Collectable collectable;
     private int searchCompletion;
-    private Collectable collectable;
 
-    public Container(int x, int y, int width, int height, ContainerType type) {
-        this(x, y, width, height, type, null);
+    public Container(int x, int y, ContainerType type) {
+        this(x, y, type, null);
     }
 
-    public Container(int x, int y, int width, int height, ContainerType type, Collectable collectable) {
-        super(x, y, width, height);
+    public Container(int x, int y, ContainerType type, Collectable collectable) {
+        super(x, y - type.getHeight(), type.getWidth(), type.getHeight());
         this.type = type;
-        searchCompletion = 0;
         this.collectable = collectable;
+        searchCompletion = 0;
     }
 
     public Optional<Collectable> pick() {
@@ -33,19 +33,39 @@ public class Container extends Entity implements Interactable {
     @Override
     public void interact() {
         searchCompletion += 2;
+        System.out.println(searchCompletion);
     }
 
     @Override
     public Rectangle getBoundingBox() {
-        return null;
+        return new Rectangle(this.x, this.y, this.width, this.height);
+    }
+
+    public ContainerType getType() {
+        return type;
     }
 
     public enum ContainerType {
-        DRAWER,
-        SAFE,
-        LOCKER,
-        VENDING_MACHINE,
-        SHELF,
-        DESK
+        DRAWER(50, 60),
+        VENDING_MACHINE(100, 100),
+        BOOKSHELF(80, 120),
+        DESK(200, 100),
+        PRINTER(80, 80);
+
+        private final int width;
+        private final int height;
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        ContainerType(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
     }
 }

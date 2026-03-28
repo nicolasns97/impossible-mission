@@ -1,9 +1,7 @@
 package com.sapienza.jimpossiblemission.view;
 
-import com.sapienza.jimpossiblemission.model.Entity;
-import com.sapienza.jimpossiblemission.model.PatrollingRobot;
-import com.sapienza.jimpossiblemission.model.Position;
-import com.sapienza.jimpossiblemission.model.Room;
+import com.sapienza.jimpossiblemission.model.*;
+import com.sapienza.jimpossiblemission.model.Container;
 import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 
 import javax.imageio.ImageIO;
@@ -21,6 +19,8 @@ public class RoomView {
     private final Map<RoomCode, BufferedImage> roomBackgroundMap;
     private final Map<RoomCode, BufferedImage> platformSpriteMap;
     private List<RobotView> robots;
+    private List<ContainerView> containers;
+    private TerminalView terminal;
 
 
     public RoomView(Map<RoomCode, BufferedImage> roomBackgroundMap, Map<RoomCode, BufferedImage> platformSpriteMap) {
@@ -38,6 +38,12 @@ public class RoomView {
             BufferedImage platformSprite = platformSpriteMap.get(room.getCode());
             g.drawImage(platformSprite, platform.getX(), platform.getY(), platformSprite.getWidth(), platformSprite.getHeight(), null);
         }
+        if (containers != null) {
+            containers.forEach(container -> container.draw(g));
+        }
+        if (terminal != null) {
+            terminal.draw(g);
+        }
         if (robots != null) {
             robots.forEach(robot -> robot.draw(g));
         }
@@ -45,6 +51,8 @@ public class RoomView {
 
     public void setRoom(Room room) {
         this.room = room;
+        this.containers = room.getContainers().stream().map(ContainerView::new).collect(Collectors.toList());
+        this.terminal = room.getTerminal().map(TerminalView::new).orElse(null);
         this.robots = room.getEnemies().stream().map(enemy -> new RobotView((PatrollingRobot) enemy)).collect(Collectors.toList());
     }
 }

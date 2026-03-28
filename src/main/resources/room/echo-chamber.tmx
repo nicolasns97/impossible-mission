@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="40" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="56">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="40" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="61">
  <editorsettings>
   <export format="tmx"/>
  </editorsettings>
@@ -88,16 +88,33 @@
   </object>
  </objectgroup>
  <objectgroup id="8" name="containers">
-  <object id="40" x="96" y="156">
+  <object id="56" x="864" y="156">
+   <properties>
+    <property name="type" value="DESK"/>
+   </properties>
    <point/>
   </object>
-  <object id="41" x="96" y="607">
+  <object id="57" x="96" y="608">
+   <properties>
+    <property name="type" value="DRAWER"/>
+   </properties>
    <point/>
   </object>
-  <object id="42" x="576" y="607">
+  <object id="58" x="128" y="157">
+   <properties>
+    <property name="type" value="PRINTER"/>
+   </properties>
    <point/>
   </object>
-  <object id="43" x="1184" y="607">
+  <object id="59" x="320" y="160">
+   <properties>
+    <property name="type" value="VENDING_MACHINE"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="11" name="terminal">
+  <object id="60" x="1152" y="309">
    <point/>
   </object>
  </objectgroup>

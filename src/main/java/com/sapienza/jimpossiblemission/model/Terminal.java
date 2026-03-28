@@ -6,12 +6,12 @@ import java.awt.*;
 public class Terminal extends Entity implements Interactable {
 
     public Terminal(int x, int y, int width, int height) {
-        super(x, y, width, height);
+        super(x, y-height, width, height);
     }
 
     @Override
     public Rectangle getBoundingBox() {
-        return null;
+        return new Rectangle(this.x, this.y, this.width, this.height);
     }
 
     @Override
