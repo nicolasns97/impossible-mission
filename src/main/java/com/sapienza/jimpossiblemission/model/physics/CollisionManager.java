@@ -1,7 +1,6 @@
-package com.sapienza.jimpossiblemission.model;
+package com.sapienza.jimpossiblemission.model.physics;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CollisionManager {

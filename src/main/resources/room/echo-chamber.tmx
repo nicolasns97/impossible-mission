@@ -94,7 +94,7 @@
   </object>
  </objectgroup>
  <objectgroup id="6" name="spawn">
-  <object id="31" x="1223" y="56">
+  <object id="31" x="1184" y="64">
    <point/>
   </object>
  </objectgroup>

@@ -1,6 +1,8 @@
 package com.sapienza.jimpossiblemission.model;
 
-import java.awt.*;
+
+import java.awt.Rectangle;
+import java.util.List;
 
 public class PatrollingRobot extends Enemy {
     private final int speed = 2;
@@ -14,11 +16,23 @@ public class PatrollingRobot extends Enemy {
     }
 
     @Override
-    public void update() {
+    public void update(List<Rectangle> roomSolids) {
         if (!enabled) return;
 
-        int dx = direction == Direction.RIGHT ? speed : -speed;
-        x += dx;
+        // 1. Sensore "salva-vita" per non cadere dalle piattaforme
+        int sensorX = (direction == Direction.RIGHT) ? x + width + 5 : x - 15;
+        Rectangle sensorDown = new Rectangle(sensorX, y + height, 1, 10);
+
+        // 2. Controllo del pavimento
+        boolean floorAhead = roomSolids != null && roomSolids.stream().anyMatch(solid -> solid.intersects(sensorDown));
+
+        // 3. Logica di movimento
+        if (!floorAhead) {
+            invertDirection();
+        } else {
+            int dx = direction == Direction.RIGHT ? speed : -speed;
+            x += dx;
+        }
     }
 
     public void invertDirection() {

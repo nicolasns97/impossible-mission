@@ -1,6 +1,7 @@
 package com.sapienza.jimpossiblemission.model;
 
-import java.awt.*;
+import java.awt.Rectangle;
+import java.util.List;
 
 public class LaserRobot extends Enemy{
     private int frameCounter;
@@ -18,7 +19,7 @@ public class LaserRobot extends Enemy{
     }
 
     @Override
-    public void update() {
+    public void update(List<Rectangle> roomSolids) {
         frameCounter++;
         if (!firing && frameCounter >= FIRE_COOLDOWN) {
             startFiring();

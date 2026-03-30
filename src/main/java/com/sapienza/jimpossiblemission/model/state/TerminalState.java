@@ -19,10 +19,20 @@ public class TerminalState implements GameState {
     }
 
     @Override
+    public void left() {}
+
+    @Override
+    public void right() {}
+
+    @Override
     public void space() {
         int selectResult = model.getTerminalMenu().select(model.getGameSession().getInventory());
-
         Room currentRoom = model.getCurrentRoom();
+
+        if (selectResult == -1) {
+            return;
+        }
+
         if (selectResult == 0) {
             for (PlatformGroup platformGroup : currentRoom.getPlatformGroups()) {
                 for (Platform platform : platformGroup.getPlatforms()) {
@@ -35,12 +45,15 @@ public class TerminalState implements GameState {
         } else if (selectResult == 2 && !model.isSnoozing()) {
             currentRoom.getEnemies().forEach(Enemy::start);
         }
+
         model.getTerminalMenu().setActive(false);
         model.setState(model.getRoomState());
     }
 
     @Override
     public void update() {
-
+        if (model.getTerminalMenu().isShowPasswordRequired()) {
+            model.updateRoomTimers();
+        }
     }
 }

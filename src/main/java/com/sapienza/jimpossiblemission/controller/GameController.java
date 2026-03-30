@@ -17,28 +17,21 @@ public class GameController extends AbstractGameController {
         this.gameModel = gameModel;
         this.gameView = gameView;
         gameModel.addObserver(gameView);
+
         gameView.addKeyListener(new KeyAdapter() {
-            private final AgentModel agent = gameModel.getAgent();
             private boolean leftPressed = false;
             private boolean rightPressed = false;
 
             @Override
             public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_LEFT -> {
-                        if (!agent.isEnabled()) break;
-
                         leftPressed = true;
-                        agent.setMoving(true);
-                        agent.setDirection(Direction.LEFT);
+                        gameModel.left();
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        if (!agent.isEnabled()) break;
-
                         rightPressed = true;
-                        agent.setMoving(true);
-                        agent.setDirection(Direction.RIGHT);
+                        gameModel.right();
                     }
                     case KeyEvent.VK_UP -> gameModel.up();
                     case KeyEvent.VK_DOWN -> gameModel.down();
@@ -48,14 +41,14 @@ public class GameController extends AbstractGameController {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                super.keyReleased(e);
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_LEFT -> leftPressed = false;
                     case KeyEvent.VK_RIGHT -> rightPressed = false;
                     case KeyEvent.VK_UP -> gameModel.stopInteracting();
                 }
+
                 if (!leftPressed && !rightPressed) {
-                    agent.setMoving(false);
+                    gameModel.stopHorizontal();
                 }
             }
         });

@@ -1,5 +1,8 @@
 package com.sapienza.jimpossiblemission.model;
 
+import java.awt.Rectangle;
+import java.util.List;
+
 public abstract class Enemy extends Entity {
     private final int startX, startY;
     Direction direction;
@@ -13,7 +16,7 @@ public abstract class Enemy extends Entity {
         startY = y;
     }
 
-    public abstract void update();
+    public abstract void update(List<Rectangle> roomSolids);
 
     public void stop() {
         this.enabled = false;

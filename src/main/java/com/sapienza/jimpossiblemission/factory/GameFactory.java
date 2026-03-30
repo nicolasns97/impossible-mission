@@ -111,7 +111,6 @@ public class GameFactory {
                 AGENT_BOUNDING_BOX_HEIGHT,
                 AGENT_SPEED,
                 Direction.LEFT);
-        CollisionManager collisionManager = new CollisionManager();
         Inventory inventory = new Inventory();
         inventory.add(new Code(Code.CodeType.SNOOZE));
         inventory.add(new Code(Code.CodeType.PLATFORM_RESET));
@@ -130,7 +129,7 @@ public class GameFactory {
                 lives,
                 gameTimer
         );
-        return new GameModel(elevatorAreaModel, rooms, gameWorld, elevator, agent, collisionManager, new TerminalMenu(), gameSession);
+        return new GameModel(elevatorAreaModel, rooms, gameWorld, elevator, agent, gameSession);
     }
 
     public static Room createRoom(RoomCode code) {
