@@ -1,13 +1,13 @@
 package com.sapienza.jimpossiblemission.model;
 
 import org.mapeditor.core.Map;
+import org.mapeditor.core.MapObject;
 import org.mapeditor.core.ObjectGroup;
 import org.mapeditor.io.TMXMapReader;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RoomMetadataReader extends TMXReader {
@@ -24,7 +24,7 @@ public class RoomMetadataReader extends TMXReader {
             List<Position> platforms = getPositionsFromLayer(map, "platforms-stops", o -> o.getProperties().getProperty("spawn") != null);
             List<Position> platformsStops = getPositionsFromLayer(map, "platforms-stops");
             List<Container> containers = getContainersFromLayer(map);
-            List<Position> enemySpawnPositions = getPositionsFromLayer(map, "enemies");
+            List<Enemy> enemySpawnPositions = getEnemiesFromLayer(map);
             Position spawn = getPositionsFromLayer(map, "spawn").get(0);
             Position exit = getPositionsFromLayer(map, "exit").get(0);
             Terminal terminal = getTerminalFromLayer(map);
@@ -34,6 +34,33 @@ public class RoomMetadataReader extends TMXReader {
         }
 
         return roomMetadata;
+    }
+
+    private List<Enemy> getEnemiesFromLayer(Map map) {
+        return map.getLayers().stream()
+                .filter(layer -> layer instanceof ObjectGroup)
+                .map(layer -> (ObjectGroup) layer)
+                .filter(objectGroup -> "enemies".equals(objectGroup.getName()))
+                .findFirst()
+                .map(objectGroup -> objectGroup.getObjects().stream()
+                        .map(this::mapToEnemy)
+                        .collect(Collectors.toList())
+                )
+                .orElseGet(ArrayList::new);
+    }
+
+    private Enemy mapToEnemy(MapObject object) {
+        String type = object.getProperties().getProperty("type");
+        String direction = object.getProperties().getProperty("direction");
+        if (type.equals("PATROLLING")) {
+            return new PatrollingRobot((int) object.getX(),
+                    (int) object.getY(), Direction.valueOf(direction));
+        } else if (type.equals("LASER")) {
+            return new LaserRobot((int) object.getX(),
+                    (int) object.getY(), Direction.valueOf(direction));
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     private Terminal getTerminalFromLayer(Map map) {
@@ -57,11 +84,24 @@ public class RoomMetadataReader extends TMXReader {
                         .map(o -> new Container(
                                 (int) o.getX(),
                                 (int) o.getY(),
-                                Container.ContainerType.valueOf(o.getProperties().getProperty("type"))
+                                Container.ContainerType.valueOf(o.getProperties().getProperty("type")),
+                                mapCollectable(o.getProperties().getProperty("collectable"))
                         ))
                         .collect(Collectors.toList())
                 )
                 .orElseGet(ArrayList::new);
+    }
+
+    private static Collectable mapCollectable(String label) {
+        Collectable collectable;
+        switch (label) {
+            case "CARD" -> collectable = new Card();
+            case "LIFT" -> collectable = new Code(Code.CodeType.PLATFORM_RESET);
+            case "SNOOZE" -> collectable = new Code(Code.CodeType.SNOOZE);
+            case "KEY" -> collectable = new Code(Code.CodeType.DOOR_KEY);
+            default -> throw new IllegalStateException();
+        }
+        return collectable;
     }
 
     public static class RoomMetadata {
@@ -70,17 +110,17 @@ public class RoomMetadataReader extends TMXReader {
         private final List<Position> platformsStops;
         private final List<Container> containers;
         private final Terminal terminal;
-        private final List<Position> enemySpawnPositions;
+        private final List<Enemy> enemies;
         private final Position spawnPosition;
         private final Position exit;
 
-        public RoomMetadata(List<Rectangle> collisionObjects, List<Position> platforms, List<Position> platformsStops, List<Container> containers, Terminal terminal, List<Position> enemySpawnPositions, Position spawnPosition, Position exit) {
+        public RoomMetadata(List<Rectangle> collisionObjects, List<Position> platforms, List<Position> platformsStops, List<Container> containers, Terminal terminal, List<Enemy> enemies, Position spawnPosition, Position exit) {
             this.collisionObjects = collisionObjects;
             this.platforms = platforms;
             this.platformsStops = platformsStops;
             this.containers = containers;
             this.terminal = terminal;
-            this.enemySpawnPositions = enemySpawnPositions;
+            this.enemies = enemies;
             this.spawnPosition = spawnPosition;
             this.exit = exit;
         }
@@ -97,8 +137,8 @@ public class RoomMetadataReader extends TMXReader {
             return containers;
         }
 
-        public List<Position> getEnemySpawnPositions() {
-            return enemySpawnPositions;
+        public List<Enemy> getEnemies() {
+            return enemies;
         }
 
         public Position getSpawnPosition() {

@@ -16,39 +16,16 @@ import java.util.stream.Collectors;
 
 public class ElevatorAreaModel {
     private final org.mapeditor.core.Map map;
-    private final Map<Integer, BufferedImage> tileImages = new HashMap<>();
     private final List<Rectangle> collisionObjects = new ArrayList<>();
     private final List<RoomTrigger> roomTriggers = new ArrayList<>();
 
-    public ElevatorAreaModel(String tmxPath, String tilesetPath) {
-        BufferedImage tileset;
-        try {
-            tileset = ImageIO.read(Objects.requireNonNull(getClass().getResource(tilesetPath)));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+    public ElevatorAreaModel(String tmxPath) {
         TMXMapReader reader;
         try {
             reader = new TMXMapReader();
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
-        }
-        try {
             map = reader.readMap(tmxPath);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-
-        int tileWidth = map.getTileWidth();
-        int tileHeight = map.getTileHeight();
-        int cols = tileset.getWidth() / tileWidth;
-        int rows = tileset.getHeight() / tileHeight;
-
-        for (int gid = 0; gid < cols * rows; gid++) {
-            int sx = (gid % cols) * tileWidth;
-            int sy = (gid / cols) * tileHeight;
-            tileImages.put(gid, tileset.getSubimage(sx, sy, tileWidth, tileHeight));
         }
 
         loadCollisionObjects();
@@ -90,10 +67,6 @@ public class ElevatorAreaModel {
 
     public org.mapeditor.core.Map getMap() {
         return map;
-    }
-
-    public BufferedImage getTileImage(int gid) {
-        return tileImages.get(gid);
     }
 
     public int[] getElevatorStops() {
@@ -140,5 +113,4 @@ public class ElevatorAreaModel {
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
-
 }

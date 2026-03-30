@@ -1,18 +1,12 @@
 package com.sapienza.jimpossiblemission.model;
 
-import com.sapienza.jimpossiblemission.Direction;
-
 import java.awt.*;
 
 public class PatrollingRobot extends Enemy {
     private final int speed = 2;
-    private Direction direction;
-    private boolean enabled;
 
     public PatrollingRobot(int x, int y, int width, int height, Direction direction) {
-        super(x, y-height, width, height);
-        this.enabled = true;
-        this.direction = direction;
+        super(x, y-height, width, height, direction);
     }
 
     public PatrollingRobot(int x, int y, Direction direction) {
@@ -27,9 +21,8 @@ public class PatrollingRobot extends Enemy {
         x += dx;
     }
 
-    @Override
-    public void toggle() {
-        enabled = !enabled;
+    public void invertDirection() {
+        super.direction = (direction == Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
     }
 
     @Override
@@ -37,13 +30,6 @@ public class PatrollingRobot extends Enemy {
         return new Rectangle(x, y, width, height);
     }
 
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
 
     public int getSpeed() {
         return speed;

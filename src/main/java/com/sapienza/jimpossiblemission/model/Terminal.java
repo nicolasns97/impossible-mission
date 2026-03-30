@@ -4,6 +4,7 @@ package com.sapienza.jimpossiblemission.model;
 import java.awt.*;
 
 public class Terminal extends Entity implements Interactable {
+    private boolean interacting;
 
     public Terminal(int x, int y, int width, int height) {
         super(x, y-height, width, height);
@@ -16,6 +17,16 @@ public class Terminal extends Entity implements Interactable {
 
     @Override
     public void interact() {
+        interacting = true;
+    }
 
+    @Override
+    public void stopInteracting() {
+        interacting = false;
+    }
+
+    @Override
+    public boolean isInteracting() {
+        return false;
     }
 }

@@ -1,14 +1,16 @@
 package com.sapienza.jimpossiblemission.model;
 
-import com.sapienza.jimpossiblemission.Direction;
 import com.sapienza.jimpossiblemission.model.CollisionManager.CollisionResult;
 import com.sapienza.jimpossiblemission.model.Room.RoomCode;
+import com.sapienza.jimpossiblemission.model.state.ElevatorState;
+import com.sapienza.jimpossiblemission.model.state.GameState;
+import com.sapienza.jimpossiblemission.model.state.RoomState;
+import com.sapienza.jimpossiblemission.model.state.TerminalState;
 
 import java.awt.*;
 import java.util.List;
 import java.util.Observable;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 public class GameModel extends Observable {
     private final ElevatorAreaModel elevatorElevatorAreaModel;
@@ -17,19 +19,44 @@ public class GameModel extends Observable {
     private final ElevatorModel elevator;
     private final AgentModel agent;
     private final CollisionManager collisionManager;
+    private final TerminalMenu terminalMenu;
+    private final GameSession gameSession;
+
+    private GameState currentState;
+    private final GameState elevatorState;
+    private final GameState roomState;
+    private final GameState terminalState;
+
     private Room currentRoom;
     private Interactable currentInteractable;
-    private int frameCounter = 0;
+    private boolean collecting;
+    private int collectingFrameCounter;
+    private Collectable collectable;
+    private int showingPasswordRequiredFrameCounter;
+    private boolean snoozing;
+    private int snoozeFrameCounter;
 
-    public GameModel(ElevatorAreaModel elevatorElevatorAreaModel, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager) {
+    public GameModel(ElevatorAreaModel elevatorElevatorAreaModel, List<Room> rooms, GameWorld gameWorld, ElevatorModel elevator, AgentModel agent, CollisionManager collisionManager, TerminalMenu terminalMenu, GameSession gameSession) {
         this.elevatorElevatorAreaModel = elevatorElevatorAreaModel;
         this.rooms = rooms;
         this.gameWorld = gameWorld;
         this.elevator = elevator;
         this.agent = agent;
         this.collisionManager = collisionManager;
+        this.terminalMenu = terminalMenu;
+        this.gameSession = gameSession;
+
+        // STATE PATTERN
+        this.elevatorState = new ElevatorState(this);
+        this.roomState = new RoomState(this);
+        this.terminalState = new TerminalState(this);
+        this.currentState = terminalState;
+
         currentRoom = null;
         currentInteractable = null;
+        collecting = false;
+        collectingFrameCounter = 0;
+        snoozing = false;
     }
 
     public void update() {
@@ -93,27 +120,80 @@ public class GameModel extends Observable {
             agent.setY(agent.getY() + dy);
             agent.setOnGround(false);
         } else {
-            if (dy > 0) { // caduta
+            if (dy > 0) {
                 agent.setY(colY.collider.y - agent.getHeight());
                 agent.land();
-                agent.setVelocityX(0); // reset impulso salto quando atterra
-            } else if (dy < 0) { // salto contro il soffitto
+                agent.setVelocityX(0);
+            } else if (dy < 0) {
                 agent.setY(agent.getY() + colY.intersection.height);
                 agent.setVelocityY(0);
             }
         }
 
         if (!isInElevatorArea()) {
-            frameCounter ++;
-            if (frameCounter == 120) {
-                //TODO change logic such that enemies turn back on collision end
-                for (Enemy e : currentRoom.getEnemies()) {
-                    PatrollingRobot p = (PatrollingRobot) e;
-                    p.setDirection(p.getDirection() == Direction.LEFT ? Direction.RIGHT : Direction.LEFT);
+            if (collecting) {
+                collectingFrameCounter++;
+                if (collectingFrameCounter == 90) {
+                    collectingFrameCounter = 0;
+                    collecting = false;
                 }
-                frameCounter = 0;
             }
-            currentRoom.getEnemies().forEach(Enemy::update);
+
+            if (terminalMenu.isShowPasswordRequired()) {
+                showingPasswordRequiredFrameCounter++;
+                if (showingPasswordRequiredFrameCounter == 60) {
+                    showingPasswordRequiredFrameCounter = 0;
+                    terminalMenu.setShowPasswordRequired(false);
+                }
+            }
+
+            if (snoozing) {
+                snoozeFrameCounter++;
+                if (snoozeFrameCounter == 15 * 60) {
+                    snoozing = false;
+                    snoozeFrameCounter = 0;
+                    currentRoom.getEnemies().forEach(Enemy::start);
+                }
+            }
+
+            List<Rectangle> roomSolids = currentRoom.getStaticCollisionObjects();
+
+            for (Enemy e : currentRoom.getEnemies()) {
+                if (e instanceof PatrollingRobot) {
+                    PatrollingRobot p = (PatrollingRobot) e;
+
+                    // 2. Posizioniamo il sensore "salva-vita"
+                    // Lo mettiamo leggermente avanti rispetto ai piedi del robot
+                    int sensorX = (p.getDirection() == Direction.RIGHT)
+                            ? p.getX() + p.getWidth() + 5
+                            : p.getX() - 15;
+
+                    // Creiamo un sensore verticale più lungo (10px) per intercettare la piattaforma
+                    // anche se il robot non è perfettamente allineato al pixel
+                    Rectangle sensorDown = new Rectangle(sensorX, p.getY() + p.getHeight(), 1, 10);
+
+                    // 3. Verifichiamo se c'è pavimento davanti
+                    boolean floorAhead = false;
+                    for (Rectangle solid : roomSolids) {
+                        if (solid.intersects(sensorDown)) {
+                            floorAhead = true;
+                            break;
+                        }
+                    }
+
+                    // 4. LOGICA DI MOVIMENTO
+                    if (!floorAhead) {
+                        // Se non c'è pavimento, girati e basta (NON muoverti in questo frame)
+                        p.invertDirection();
+                    } else {
+                        // Se la strada è sicura, procedi con l'update del movimento
+                        p.update();
+                    }
+                } else {
+                    // Se non è un PatrollingRobot (es. altri nemici), aggiorna normalmente
+                    e.update();
+                }
+            }
         }
         // 4. Aggiorna l'ascensore
         elevator.update();
@@ -131,6 +211,7 @@ public class GameModel extends Observable {
         if (isInElevatorArea()) return;
 
         for (Container container : currentRoom.getContainers()) {
+            if (container.getSearchCompletion() >= 100) continue;
             CollisionResult collisionResult = collisionManager.checkCollision(container.getBoundingBox(), agent.getBoundingBox());
             if (collisionResult.collided) {
                 currentInteractable = container;
@@ -146,6 +227,7 @@ public class GameModel extends Observable {
             }
         }
         currentInteractable = null;
+        agent.stopInteracting();
     }
 
     private void updateGameLogic() {
@@ -224,7 +306,6 @@ public class GameModel extends Observable {
         currentRoom = rooms.stream().filter(r -> r.getCode().equals(roomCode)).findFirst().orElseThrow(IllegalStateException::new);
         agent.setX(currentRoom.getSpawnPosition().getX() - 100);
         agent.setY(currentRoom.getSpawnPosition().getY());
-        frameCounter = 0;
         for (Enemy e : currentRoom.getEnemies()) {
             e.reset();
         }
@@ -266,24 +347,100 @@ public class GameModel extends Observable {
     }
 
     public void up() {
-        if (isInElevatorArea()) {
+        if (terminalMenu.isActive()) {
+            terminalMenu.up();
+        } else if (isInElevatorArea()) {
             elevator.startMoving(Direction.UP);
         } else {
             movePlatform(Direction.UP);
             if (currentInteractable != null) {
+                agent.startInteracting();
                 currentInteractable.interact();
+                if (currentInteractable instanceof Container) {
+                    Container container = (Container) currentInteractable;
+                    Optional<Collectable> collectable = container.collect();
+                    if (collectable.isPresent()) {
+                        collecting = true;
+                        this.collectable = collectable.get();
+                        gameSession.getInventory().add(collectable.get());
+                    } else {
+                        collecting = false;
+                        collectingFrameCounter = 0;
+                    }
+                } else if (currentInteractable instanceof Terminal) {
+                    currentRoom.getEnemies().forEach(Enemy::stop);
+                    terminalMenu.setActive(true);
+                }
             }
         }
-        // interactables (Terminal & Container)
-        // l'interactable deve essere "attivo" se l'agente è nel suo bounding box (o qualcosa di simile) e deve disattivarsi quando l'agente si allontana
-        // controllare se c'è un interactable attivo quando si usa key up per interagire
     }
 
     public void down() {
-        if (isInElevatorArea()) {
+        if (terminalMenu.isActive()) {
+            terminalMenu.down();
+        } else if (isInElevatorArea()) {
             elevator.startMoving(Direction.DOWN);
         } else {
             movePlatform(Direction.DOWN);
         }
     }
+
+    public void space() {
+        if (terminalMenu.isActive()) {
+            int selectResult = terminalMenu.select(gameSession.getInventory());
+
+            if (selectResult == 0) {
+                for (PlatformGroup platformGroup : currentRoom.getPlatformGroups()) {
+                    for (Platform platform : platformGroup.getPlatforms()) {
+                        platform.resetPosition();
+                    }
+                }
+                currentRoom.getEnemies().forEach(Enemy::start);
+            } else if (selectResult == 1) {
+                snoozing = true;
+            } else if (selectResult == 2 && !snoozing) {
+                currentRoom.getEnemies().forEach(Enemy::start);
+            }
+
+        } else if (agent.isEnabled())
+            agent.pressJump();
+    }
+
+    public void stopInteracting() {
+        agent.stopInteracting();
+        if (currentInteractable != null) {
+            currentInteractable.stopInteracting();
+        }
+    }
+
+    public boolean isCollecting() {
+        return collecting;
+    }
+
+    public Collectable getCollectable() {
+        return this.collectable;
+    }
+
+    public TerminalMenu getTerminalMenu() {
+        return terminalMenu;
+    }
+
+    public GameSession getGameSession() {
+        return gameSession;
+    }
+
+    public boolean isSnoozing() {
+        return snoozing;
+    }
+
+    public void setSnoozing(boolean snoozing) {
+        this.snoozing = snoozing;
+    }
+
+    public void setState(GameState newState) {
+        this.currentState = newState;
+    }
+    public GameState getRoomState() { return roomState; }
+    public GameState getElevatorState() { return elevatorState; }
+    public GameState getTerminalState() { return terminalState; }
 }

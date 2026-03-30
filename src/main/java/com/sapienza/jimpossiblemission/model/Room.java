@@ -51,6 +51,10 @@ public class Room {
         return collisionObjects;
     }
 
+    public List<Rectangle> getStaticCollisionObjects() {
+        return this.collisionObjects;
+    }
+
     public List<Enemy> getEnemies() {
         return enemies;
     }

@@ -1,7 +1,7 @@
 package com.sapienza.jimpossiblemission.view;
 
 import com.sapienza.jimpossiblemission.Debug;
-import com.sapienza.jimpossiblemission.Direction;
+import com.sapienza.jimpossiblemission.model.Direction;
 import com.sapienza.jimpossiblemission.model.AgentModel;
 
 import javax.imageio.ImageIO;
@@ -12,15 +12,18 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 
+import static com.sapienza.jimpossiblemission.ImageUtils.flipHorizontal;
+
 public class AgentView {
     private final AgentModel model;
-    private final String RUN_DIR = "/run";
-    private final String JUMP_DIR = "/jump";
 
-    BufferedImage[] spritesRunRight = new BufferedImage[16];
-    BufferedImage[] spritesRunLeft = new BufferedImage[16];
-    BufferedImage[] spritesJumpRight = new BufferedImage[12];
-    BufferedImage[] spritesJumpLeft = new BufferedImage[12];
+    private final BufferedImage[] spritesRunRight = new BufferedImage[16];
+    private final BufferedImage[] spritesRunLeft = new BufferedImage[16];
+    private final BufferedImage[] spritesJumpRight = new BufferedImage[12];
+    private final BufferedImage[] spritesJumpLeft = new BufferedImage[12];
+    private final BufferedImage[] spritesElectrifiedRight = new BufferedImage[23];
+    private final BufferedImage[] spritesElectrifiedLeft = new BufferedImage[23];
+    private final BufferedImage searchSprite;
 
     int runFrameIndex = 0;
     int runFrameCounter = 0;
@@ -34,15 +37,21 @@ public class AgentView {
         this.model = model;
         try {
             for (int i = 0; i < 12; i++) {
-                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + JUMP_DIR + "/" + (i+1) + ".png")));
+                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + "/jump" + "/" + (i+1) + ".png")));
                 spritesJumpRight[i] = raw;
                 spritesJumpLeft[i] = flipHorizontal(raw);
             }
             for (int i = 0; i <= 15; i++) {
-                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + RUN_DIR + "/" + i + ".png")));
+                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + "/run" + "/" + i + ".png")));
                 spritesRunRight[i] = raw;
                 spritesRunLeft[i] = flipHorizontal(raw);
             }
+            for (int i = 0; i <= 22; i++) {
+                BufferedImage raw = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + "/electrified" + "/" + i + ".png")));
+                spritesElectrifiedRight[i] = raw;
+                spritesElectrifiedLeft[i] = flipHorizontal(raw);
+            }
+            searchSprite = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(agentDirectory + "/search" + "/search.png")));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,6 +88,13 @@ public class AgentView {
             jumpFrameIndex = 0;
             jumpFrameCounter = 0;
 
+        } else if (model.isInteracting()) {
+            runFrameIndex = 0;
+            runFrameCounter = 0;
+            jumpFrameIndex = 0;
+            jumpFrameCounter = 0;
+
+            image = searchSprite;
         } else {
             // fermo (idle)
             runFrameIndex = 0;
@@ -102,15 +118,4 @@ public class AgentView {
         }
     }
 
-    public static BufferedImage flipHorizontal(BufferedImage img) {
-        int w = img.getWidth();
-
-        // Trasformazione: scala a -1 sull’asse X, poi trasla di w pixel
-        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
-        tx.translate(-w, 0);
-
-        // Applica la trasformazione
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        return op.filter(img, null);
-    }
 }

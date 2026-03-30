@@ -1,7 +1,5 @@
 package com.sapienza.jimpossiblemission.model;
 
-import com.sapienza.jimpossiblemission.Direction;
-
 import java.util.List;
 
 public class PlatformGroup {

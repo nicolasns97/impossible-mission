@@ -1,10 +1,9 @@
 package com.sapienza.jimpossiblemission.factory;
 
-import com.sapienza.jimpossiblemission.Direction;
+import com.sapienza.jimpossiblemission.model.Direction;
 import com.sapienza.jimpossiblemission.Main;
 import com.sapienza.jimpossiblemission.controller.GameController;
 import com.sapienza.jimpossiblemission.model.*;
-import com.sapienza.jimpossiblemission.model.Container;
 import com.sapienza.jimpossiblemission.model.Room.RoomCode;
 import com.sapienza.jimpossiblemission.model.RoomMetadataReader.RoomMetadata;
 import com.sapienza.jimpossiblemission.view.*;
@@ -49,18 +48,23 @@ public class GameFactory {
     private static final String AGENT_SPRITE_DIRECTORY = "/agent";
 
     public static GameController createGame() {
-        ElevatorAreaModel elevatorElevatorAreaModel = new ElevatorAreaModel(ELEVATOR_TMX_PATH, TILESET_PATH);
+        ElevatorAreaModel elevatorElevatorAreaModel = new ElevatorAreaModel(ELEVATOR_TMX_PATH);
         GameModel gameModel = createGameModel(elevatorElevatorAreaModel);
 
-        ElevatorAreaView elevatorAreaView = new ElevatorAreaView(elevatorElevatorAreaModel);
+        ElevatorAreaView elevatorAreaView = new ElevatorAreaView(elevatorElevatorAreaModel, TILESET_PATH);
         ElevatorView elevatorView = new ElevatorView(gameModel.getElevator(), ELEVATOR_BASE_SPRITE_PATH, ELEVATOR_DOOR_SPRITE_PATH, ROOF_SPRITE_PATH);
         AgentView agentView = new AgentView(gameModel.getAgent(), AGENT_SPRITE_DIRECTORY);
         RoomView roomView = createRoomView(gameModel.getRooms());
+        TerminalMenuView terminalMenuView = new TerminalMenuView(gameModel.getTerminalMenu());
         GameView gameView = new GameView(gameModel,
                 elevatorAreaView,
                 elevatorView,
                 agentView,
-                roomView);
+                roomView,
+                new CollectableView(),
+                terminalMenuView,
+                new HUDView(gameModel.getGameSession())
+        );
 
         return new GameController(gameModel, gameView);
     }
@@ -108,9 +112,25 @@ public class GameFactory {
                 AGENT_SPEED,
                 Direction.LEFT);
         CollisionManager collisionManager = new CollisionManager();
-
-
-        return new GameModel(elevatorAreaModel, rooms, gameWorld, elevator, agent, collisionManager);
+        Inventory inventory = new Inventory();
+        inventory.add(new Code(Code.CodeType.SNOOZE));
+        inventory.add(new Code(Code.CodeType.PLATFORM_RESET));
+        List<Life> lives = new ArrayList<>();
+        lives.add(new Life());
+        lives.add(new Life());
+        lives.add(new Life());
+        lives.add(new Life());
+        lives.add(new Life());
+        GameTimer gameTimer = new GameTimer(10,0);
+        gameTimer.start();
+        GameSession gameSession = new GameSession(
+                inventory,
+                agent,
+                rooms,
+                lives,
+                gameTimer
+        );
+        return new GameModel(elevatorAreaModel, rooms, gameWorld, elevator, agent, collisionManager, new TerminalMenu(), gameSession);
     }
 
     public static Room createRoom(RoomCode code) {
@@ -124,7 +144,7 @@ public class GameFactory {
                     roomMetadata.getSpawnPosition(),
                     roomMetadata.getExit(),
                     roomMetadata.getCollisionObjects(),
-                    EnemyFactory.createEnemies(roomMetadata.getEnemySpawnPositions()),
+                    roomMetadata.getEnemies(),
                     roomMetadata.getContainers(),
                     roomMetadata.getTerminal(),
                     PlatformFactory.createPlatformGroups(roomMetadata.getPlatforms(), roomMetadata.getPlatformsStops()));

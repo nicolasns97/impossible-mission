@@ -7,6 +7,7 @@ public class Container extends Entity implements Interactable {
     private final ContainerType type;
     private final Collectable collectable;
     private int searchCompletion;
+    private boolean interacting;
 
     public Container(int x, int y, ContainerType type) {
         this(x, y, type, null);
@@ -19,7 +20,7 @@ public class Container extends Entity implements Interactable {
         searchCompletion = 0;
     }
 
-    public Optional<Collectable> pick() {
+    public Optional<Collectable> collect() {
         if (searchCompletion >= 100 && collectable != null) {
             return Optional.of(collectable);
         }
@@ -33,7 +34,17 @@ public class Container extends Entity implements Interactable {
     @Override
     public void interact() {
         searchCompletion += 2;
-        System.out.println(searchCompletion);
+        interacting = true;
+    }
+
+    @Override
+    public void stopInteracting() {
+        interacting = false;
+    }
+
+    @Override
+    public boolean isInteracting() {
+        return interacting;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.sapienza.jimpossiblemission.controller;
 
-import com.sapienza.jimpossiblemission.Direction;
+import com.sapienza.jimpossiblemission.model.Direction;
 import com.sapienza.jimpossiblemission.model.AgentModel;
 import com.sapienza.jimpossiblemission.model.GameModel;
 import com.sapienza.jimpossiblemission.view.GameView;
@@ -42,10 +42,7 @@ public class GameController extends AbstractGameController {
                     }
                     case KeyEvent.VK_UP -> gameModel.up();
                     case KeyEvent.VK_DOWN -> gameModel.down();
-                    case KeyEvent.VK_SPACE -> {
-                        if (!agent.isEnabled()) break;
-                        agent.pressJump();
-                    }
+                    case KeyEvent.VK_SPACE -> gameModel.space();
                 }
             }
 
@@ -55,6 +52,7 @@ public class GameController extends AbstractGameController {
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_LEFT -> leftPressed = false;
                     case KeyEvent.VK_RIGHT -> rightPressed = false;
+                    case KeyEvent.VK_UP -> gameModel.stopInteracting();
                 }
                 if (!leftPressed && !rightPressed) {
                     agent.setMoving(false);

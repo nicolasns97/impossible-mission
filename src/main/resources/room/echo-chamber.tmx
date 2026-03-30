@@ -65,15 +65,31 @@
  </objectgroup>
  <objectgroup id="7" name="enemies">
   <object id="33" x="1056" y="310">
+   <properties>
+    <property name="direction" value="LEFT"/>
+    <property name="type" value="LASER"/>
+   </properties>
    <point/>
   </object>
   <object id="36" x="256" y="310">
+   <properties>
+    <property name="direction" value="RIGHT"/>
+    <property name="type" value="LASER"/>
+   </properties>
    <point/>
   </object>
   <object id="37" x="896" y="461">
+   <properties>
+    <property name="direction" value="LEFT"/>
+    <property name="type" value="PATROLLING"/>
+   </properties>
    <point/>
   </object>
   <object id="38" x="896" y="612">
+   <properties>
+    <property name="direction" value="LEFT"/>
+    <property name="type" value="PATROLLING"/>
+   </properties>
    <point/>
   </object>
  </objectgroup>
@@ -90,31 +106,35 @@
  <objectgroup id="8" name="containers">
   <object id="56" x="864" y="156">
    <properties>
+    <property name="collectable" value="SNOOZE"/>
     <property name="type" value="DESK"/>
    </properties>
    <point/>
   </object>
   <object id="57" x="96" y="608">
    <properties>
+    <property name="collectable" value="LIFT"/>
     <property name="type" value="DRAWER"/>
    </properties>
    <point/>
   </object>
   <object id="58" x="128" y="157">
    <properties>
+    <property name="collectable" value="KEY"/>
     <property name="type" value="PRINTER"/>
    </properties>
    <point/>
   </object>
   <object id="59" x="320" y="160">
    <properties>
+    <property name="collectable" value="CARD"/>
     <property name="type" value="VENDING_MACHINE"/>
    </properties>
    <point/>
   </object>
  </objectgroup>
  <objectgroup id="11" name="terminal">
-  <object id="60" x="1152" y="309">
+  <object id="60" x="1120" y="160">
    <point/>
   </object>
  </objectgroup>

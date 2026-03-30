@@ -2,5 +2,9 @@ package com.sapienza.jimpossiblemission.model;
 
 public interface Interactable {
 
-    public void interact();
+    void interact();
+
+    void stopInteracting();
+
+    boolean isInteracting();
 }

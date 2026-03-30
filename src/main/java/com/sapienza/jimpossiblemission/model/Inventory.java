@@ -4,6 +4,7 @@ import com.sapienza.jimpossiblemission.model.Code.CodeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Inventory {
     private final List<Card> cards;
@@ -38,4 +39,11 @@ public class Inventory {
                 .orElse(false);
     }
 
+    public void add(Collectable collectable) {
+        if (collectable instanceof Card) {
+            cards.add((Card) collectable);
+        } else if (collectable instanceof Code) {
+            codes.add((Code) collectable);
+        }
+    }
 }

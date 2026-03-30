@@ -1,7 +1,5 @@
 package com.sapienza.jimpossiblemission.model;
 
-import com.sapienza.jimpossiblemission.Direction;
-
 import java.awt.*;
 
 public class Platform extends Entity {

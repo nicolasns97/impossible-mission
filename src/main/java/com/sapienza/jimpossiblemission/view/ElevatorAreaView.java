@@ -4,14 +4,39 @@ import com.sapienza.jimpossiblemission.model.ElevatorAreaModel;
 import org.mapeditor.core.Tile;
 import org.mapeditor.core.TileLayer;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class ElevatorAreaView {
     private final ElevatorAreaModel elevatorAreaModel;
+    private final Map<Integer, BufferedImage> tileImages = new HashMap<>();
 
-    public ElevatorAreaView(ElevatorAreaModel elevatorAreaModel) {
-        this.elevatorAreaModel = elevatorAreaModel;
+
+    public ElevatorAreaView(ElevatorAreaModel model, String tilesetPath) {
+        this.elevatorAreaModel = model;
+
+        BufferedImage tileset;
+        try {
+            tileset = ImageIO.read(Objects.requireNonNull(getClass().getResource(tilesetPath)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int tileWidth = model.getMap().getTileWidth();
+        int tileHeight = model.getMap().getTileHeight();
+        int cols = tileset.getWidth() / tileWidth;
+        int rows = tileset.getHeight() / tileHeight;
+
+        for (int gid = 0; gid < cols * rows; gid++) {
+            int sx = (gid % cols) * tileWidth;
+            int sy = (gid / cols) * tileHeight;
+            tileImages.put(gid, tileset.getSubimage(sx, sy, tileWidth, tileHeight));
+        }
     }
 
     public void draw(Graphics g, int cameraX, int cameraY, int screenWidth, int screenHeight) {
@@ -39,7 +64,7 @@ public class ElevatorAreaView {
                 if (mapCol >= 0 && mapRow >= 0 && mapCol < layer.getWidth() && mapRow < layer.getHeight()) {
                     Tile tile = layer.getTileAt(mapCol, mapRow);
                     if (tile != null) {
-                        BufferedImage image = elevatorAreaModel.getTileImage(tile.getId());
+                        BufferedImage image = tileImages.get(tile.getId());
                         if (image != null) {
                             int drawX = col * tileWidth - offsetX;
                             int drawY = row * tileHeight - offsetY;

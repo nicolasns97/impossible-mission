@@ -1,7 +1,5 @@
 package com.sapienza.jimpossiblemission.model;
 
-import com.sapienza.jimpossiblemission.Direction;
-
 import java.awt.*;
 
 public class AgentModel {
@@ -14,6 +12,7 @@ public class AgentModel {
     private boolean moving;
     private boolean enabled;
     private boolean jumping;
+    private boolean interacting;
 
     private float velocityY = 0;
     private float velocityX = 0;
@@ -32,6 +31,7 @@ public class AgentModel {
         this.speed = speed;
         this.direction = direction;
         this.jumping = false;
+        this.interacting = false;
     }
 
     public void applyGravity() {
@@ -162,5 +162,17 @@ public class AgentModel {
 
     public void pressJump() {
         jumpBufferCounter = jumpBufferFrames;
+    }
+
+    public boolean isInteracting() {
+        return this.interacting;
+    }
+
+    public void startInteracting() {
+        this.interacting = true;
+    }
+
+    public void stopInteracting() {
+        this.interacting = false;
     }
 }
